@@ -1,10 +1,10 @@
 module de.hitec.nhplus {
-    requires javafx.controls;
-    requires javafx.fxml;
+    requires transitive javafx.controls;
+    requires transitive javafx.fxml;
 
-    requires org.controlsfx.controls;
-    requires java.sql;
-    requires org.xerial.sqlitejdbc;
+    requires transitive org.controlsfx.controls;
+    requires transitive java.sql;
+    requires transitive org.xerial.sqlitejdbc;
 
     opens de.hitec.nhplus to javafx.fxml;
     opens de.hitec.nhplus.controller to javafx.fxml;
