@@ -13,6 +13,7 @@ import java.sql.Statement;
 
 import static de.hitec.nhplus.utils.DateConverter.convertStringToLocalDate;
 import static de.hitec.nhplus.utils.DateConverter.convertStringToLocalTime;
+import java.sql.PreparedStatement;
 
 /**
  * Call static class provides to static methods to set up and wipe the database. It uses the class ConnectionBuilder
@@ -31,8 +32,10 @@ public class SetUpDB {
         SetUpDB.wipeDb(connection);
         SetUpDB.setUpTablePatient(connection);
         SetUpDB.setUpTableTreatment(connection);
+        SetUpDB.setUpTableUsers(connection);
         SetUpDB.setUpPatients();
         SetUpDB.setUpTreatments();
+        SetUpDB.setUpUsers();
     }
 
     /**
@@ -42,6 +45,7 @@ public class SetUpDB {
         try (Statement statement = connection.createStatement()) {
             statement.execute("DROP TABLE IF EXISTS treatment");
             statement.execute("DROP TABLE IF EXISTS patient");
+            statement.execute("DROP TABLE IF EXISTS users");
         } catch (SQLException exception) {
             System.out.println(exception.getMessage());
         }
@@ -83,6 +87,24 @@ public class SetUpDB {
         }
     }
 
+    private static void setUpTableUsers(Connection connection) {
+        final String SQL = "CREATE TABLE IF NOT EXISTS users (" +
+                "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                "username TEXT UNIQUE NOT NULL, " +
+                "password_hash TEXT NOT NULL, " +
+                "salt TEXT NOT NULL, " +
+                "role TEXT NOT NULL, " +
+                "active INTEGER NOT NULL DEFAULT 1, " +
+                "must_change_password INTEGER NOT NULL DEFAULT 1" +
+                ");";
+
+        try (Statement statement = connection.createStatement()) {
+            statement.execute(SQL);
+        } catch (SQLException exception) {
+            System.out.println(exception.getMessage());
+        }
+    }
+
 
     private static void setUpPatients() {
         try {
@@ -111,6 +133,46 @@ public class SetUpDB {
             dao.create(new Treatment(14, 4, convertStringToLocalDate("2023-08-24"), convertStringToLocalTime("09:30"), convertStringToLocalTime("10:15"), "KG", "Lympfdrainage"));
             dao.create(new Treatment(16, 6, convertStringToLocalDate("2023-08-31"), convertStringToLocalTime("13:30"), convertStringToLocalTime("13:45"), "Toilettengang", "Hilfe beim Toilettengang; Patientin klagt über Schmerzen beim Stuhlgang. Gabe von Iberogast"));
             dao.create(new Treatment(17, 6, convertStringToLocalDate("2023-09-01"), convertStringToLocalTime("16:00"), convertStringToLocalTime("17:00"), "KG", "Massage der Extremitäten zur Verbesserung der Durchblutung"));
+        } catch (SQLException exception) {
+            exception.printStackTrace();
+        }
+    }
+
+    private static void setUpUsers() {
+
+        try {
+            Connection connection = ConnectionBuilder.getConnection();
+
+            String sql = """
+            INSERT INTO users
+            (username, password_hash, salt, role)
+            VALUES (?, ?, ?, ?)
+            """;
+
+            String adminSalt = PasswordUtil.generateSalt();
+            String adminHash = PasswordUtil.hash("admin123", adminSalt);
+            PreparedStatement admin = connection.prepareStatement(sql);
+
+            admin.setString(1, "admin");
+            admin.setString(2, adminHash);
+            admin.setString(3, adminSalt);
+            admin.setString(4, "ADMIN");
+
+            admin.executeUpdate();
+
+            String userSalt = PasswordUtil.generateSalt();
+            String userHash = PasswordUtil.hash("pflege123", userSalt);
+
+            PreparedStatement user = connection.prepareStatement(sql);
+
+            user.setString(1, "pfleger1");
+            user.setString(2, userHash);
+            user.setString(3, userSalt);
+            user.setString(4, "USER");
+
+            user.executeUpdate();
+            System.out.println("Test");
+
         } catch (SQLException exception) {
             exception.printStackTrace();
         }
