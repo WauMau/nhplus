@@ -1,47 +1,53 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.*?>
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
-<?import javafx.scene.text.*?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
 
-<!--
-  STUB-Vorlage für das Login-Fenster (AB 04, Workstream C).
+<VBox xmlns="http://javafx.com/javafx/10.0.2-internal"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="de.hitec.nhplus.controller.LoginController"
+      alignment="CENTER"
+      spacing="15.0"
+      prefHeight="300.0"
+      prefWidth="420.0"
+      stylesheets="@Application.css">
 
-  Dieses Skelett liefert ein einfaches Formular: Benutzername-Feld,
-  Passwort-Feld, Login-Button und ein Label für Fehlermeldungen.
+    <padding>
+        <Insets top="40.0" right="60.0" bottom="40.0" left="60.0"/>
+    </padding>
 
-  Was noch fehlt und von euch ergänzt werden muss:
+    <children>
 
-    1. fx:controller="de.hitec.nhplus.controller.LoginController"
-       oben im <VBox>-Tag ergänzen, sobald euer Controller existiert.
+        <!-- Titel -->
+        <Label text="NHPlus — Anmeldung">
+            <font>
+                <Font size="22.0"/>
+            </font>
+        </Label>
 
-    2. onAction-Handler am Login-Button eintragen (z. B.
-       onAction="#handleLogin").
+        <!-- Benutzername -->
+        <TextField fx:id="textFieldUsername"
+                   promptText="Benutzername"/>
 
-    3. Im Controller das passwordHash + salt aus der user-Tabelle laden
-       und mit PasswordUtil.verify(eingabe, hash, salt) prüfen.
+        <!-- Passwort -->
+        <PasswordField fx:id="passwordField"
+                       promptText="Passwort"/>
 
-    4. Bei Erfolg: Scene-Wechsel auf der bestehenden Stage
-       (stage.setScene(mainScene)) — siehe Hinweis in AB 04.
-       Bei Fehler: labelError sichtbar machen und Meldung setzen.
+        <!-- Login Button -->
+        <Button fx:id="buttonLogin"
+                text="Anmelden"
+                defaultButton="true"
+                maxWidth="Infinity"
+                onAction="#handleLogin"/>
 
-  Hinweis: Das PasswordField unterscheidet sich vom TextField darin,
-  dass die Eingabe als Punkte angezeigt wird (Standard-Verhalten).
--->
-<VBox alignment="CENTER" prefHeight="300.0" prefWidth="420.0" spacing="15.0" stylesheets="@Application.css" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1">
-   <padding>
-      <Insets bottom="40.0" left="60.0" right="60.0" top="40.0" />
-   </padding>
-   <children>
-      <Label text="NHPlus — Anmeldung">
-         <font>
-            <Font size="22.0" />
-         </font>
-      </Label>
-      <TextField fx:id="textFieldUsername" promptText="Benutzername" />
-      <PasswordField fx:id="passwordField" promptText="Passwort" />
-      <Button fx:id="buttonLogin" defaultButton="true" maxWidth="Infinity" mnemonicParsing="false" text="Anmelden" />
-      <Label fx:id="labelError" text="" textFill="#c0392b" visible="false" wrapText="true" />
-   </children>
+        <!-- Fehlermeldung -->
+        <Label fx:id="labelError"
+               text=""
+               visible="false"
+               wrapText="true"
+               textFill="#c0392b"/>
+
+    </children>
 </VBox>

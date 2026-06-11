@@ -18,7 +18,7 @@ public class Main extends Application {
     @Override
     public void start(Stage primaryStage) {
         this.primaryStage = primaryStage;
-        mainWindow();
+        loginWindow();
     }
 
     public void mainWindow() {
@@ -39,6 +39,22 @@ public class Main extends Application {
             });
         } catch (IOException exception) {
             exception.printStackTrace();
+        }
+    }
+
+    public void loginWindow() {
+
+        try {
+
+            FXMLLoader loader = new FXMLLoader(Main.class.getResource("/de/hitec/nhplus/LoginView.fxml"));
+
+            Scene scene = new Scene(loader.load());
+
+            primaryStage.setScene(scene);
+            primaryStage.show();
+
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
