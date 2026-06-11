@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/10.0.2"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="de.hitec.nhplus.controller.LogController">
+
+    <center>
+        <TableView fx:id="tableLogs">
+            <columns>
+                <TableColumn fx:id="columnUser" text="User" prefWidth="120"/>
+                <TableColumn fx:id="columnAction" text="Aktion" prefWidth="150"/>
+                <TableColumn fx:id="columnTimestamp" text="Zeit" prefWidth="200"/>
+                <TableColumn fx:id="columnDescription" text="Beschreibung" prefWidth="300"/>
+            </columns>
+        </TableView>
+    </center>
+
+</BorderPane>

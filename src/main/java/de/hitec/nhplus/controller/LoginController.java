@@ -1,6 +1,11 @@
 package de.hitec.nhplus.controller;
+
+import java.io.IOException;
+import java.sql.SQLException;
+
 import de.hitec.nhplus.Main;
 import de.hitec.nhplus.datastorage.UserDao;
+import de.hitec.nhplus.logging.LogService;
 import de.hitec.nhplus.model.Session;
 import de.hitec.nhplus.model.User;
 import de.hitec.nhplus.utils.PasswordUtil;
@@ -12,8 +17,6 @@ import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
-import java.io.IOException;
-import java.sql.SQLException;
 
 public class LoginController {
 
@@ -25,6 +28,7 @@ public class LoginController {
 
     @FXML
     private Label labelError;
+
     private final UserDao userDao = new UserDao();
 
     @FXML
@@ -35,10 +39,13 @@ public class LoginController {
             String password = passwordField.getText();
             User user = userDao.findByUsername(username);
 
-            if (user != null && user.isActive() && PasswordUtil.verify(password, user.getSalt(), user.getPasswordHash())) {
+            if (user != null && user.isActive()
+                    && PasswordUtil.verify(password, user.getSalt(), user.getPasswordHash())) {
+
                 if (user.isMustChangePassword()) {
                     try {
-                        FXMLLoader loader = new FXMLLoader(Main.class.getResource("/de/hitec/nhplus/ChangePasswordView.fxml"));
+                        FXMLLoader loader = new FXMLLoader(
+                                Main.class.getResource("/de/hitec/nhplus/ChangePasswordView.fxml"));
 
                         Parent root = loader.load();
                         ChangePasswordController controller = loader.getController();
@@ -61,8 +68,14 @@ public class LoginController {
                         return;
                     }
                 }
+
                 Session.setCurrentUser(user);
+
+                // 🔥 HIER IST DAS LOGGING
+                LogService.log("LOGIN", "User hat sich eingeloggt");
+
                 openMainWindow();
+
             } else {
                 labelError.setVisible(true);
                 labelError.setText("Benutzername oder Passwort falsch");
@@ -77,7 +90,8 @@ public class LoginController {
 
     private void openMainWindow() {
         try {
-            FXMLLoader loader = new FXMLLoader(Main.class.getResource("/de/hitec/nhplus/MainWindowView.fxml"));
+            FXMLLoader loader = new FXMLLoader(
+                    Main.class.getResource("/de/hitec/nhplus/MainWindowView.fxml"));
             Scene scene = new Scene(loader.load());
             Stage stage = (Stage) textFieldUsername.getScene().getWindow();
             stage.setScene(scene);

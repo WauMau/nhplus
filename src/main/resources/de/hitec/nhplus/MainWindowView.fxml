@@ -23,6 +23,11 @@
                      mnemonicParsing="false"
                      text="Benutzerverwaltung"
                      onAction="#handleUserManagement"/>
+            <Button fx:id="buttonLogs"
+            mnemonicParsing="false"
+            text="Logs"
+            onAction="#handleShowLogs"/>
+            
          </children>
       </VBox>
    </left>
