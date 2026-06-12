@@ -1,7 +1,5 @@
 package de.hitec.nhplus.datastorage;
 
-import de.hitec.nhplus.model.User;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -9,12 +7,30 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.hitec.nhplus.logging.LogService;
+import de.hitec.nhplus.model.User;
+
 public class UserDao {
 
     private final Connection connection;
 
     public UserDao() {
         connection = ConnectionBuilder.getConnection();
+    }
+
+    /**
+     * Hilfsmethode, um für das Logging den Zustand eines Benutzers anhand der ID zu laden.
+     */
+    public User findById(int id) throws SQLException {
+        String sql = "SELECT * FROM users WHERE id = ?";
+        PreparedStatement statement = connection.prepareStatement(sql);
+        statement.setInt(1, id);
+        ResultSet resultSet = statement.executeQuery();
+
+        if (resultSet.next()) {
+            return mapUser(resultSet);
+        }
+        return null;
     }
 
     public User findByUsername(String username) throws SQLException {
@@ -60,6 +76,11 @@ public class UserDao {
         statement.setBoolean(6, user.isMustChangePassword());
 
         statement.executeUpdate();
+
+        // LOGGING: Benutzer erstellen
+        String description = String.format("Neuer Benutzer '%s' mit der Rolle '%s' wurde angelegt.", 
+                user.getUsername(), user.getRole());
+        LogService.log("USER_CREATE", description);
     }
 
     private User mapUser(ResultSet rs) throws SQLException {
@@ -75,6 +96,10 @@ public class UserDao {
     }
 
     public void updatePassword(int userId, String passwordHash, String salt) throws SQLException {
+        // Vorab Benutzer für das Log laden
+        User user = this.findById(userId);
+        String username = (user != null) ? user.getUsername() : "Unbekannt (ID: " + userId + ")";
+
         String sql =
                 """
                 UPDATE users
@@ -90,9 +115,17 @@ public class UserDao {
         statement.setString(2, salt);
         statement.setInt(3, userId);
         statement.executeUpdate();
+
+        // LOGGING: Eigenes Passwort geändert
+        String description = String.format("Das Passwort für Benutzer '%s' wurde aktualisiert.", username);
+        LogService.log("USER_PASSWORD_CHANGE", description);
     }
 
     public void updateActiveStatus(int userId, boolean active) throws SQLException {
+        // Vorab Benutzer für das Log laden
+        User user = this.findById(userId);
+        String username = (user != null) ? user.getUsername() : "Unbekannt (ID: " + userId + ")";
+
         String sql =
                 """
                 UPDATE users
@@ -105,9 +138,19 @@ public class UserDao {
         statement.setBoolean(1, active);
         statement.setInt(2, userId);
         statement.executeUpdate();
+
+        // LOGGING: Status geändert (Aktivieren / Deaktivieren)
+        String statusText = active ? "aktiviert" : "deaktiviert";
+        String description = String.format("Benutzer '%s' (Rolle: %s) wurde %s.", 
+                username, (user != null ? user.getRole() : "unbekannt"), statusText);
+        LogService.log("USER_STATUS_CHANGE", description);
     }
 
     public void resetPassword(int userId, String hash, String salt) throws SQLException {
+        // Vorab Benutzer für das Log laden
+        User user = this.findById(userId);
+        String username = (user != null) ? user.getUsername() : "Unbekannt (ID: " + userId + ")";
+
         String sql =
                 """
                 UPDATE users
@@ -123,5 +166,9 @@ public class UserDao {
         statement.setString(2, salt);
         statement.setInt(3, userId);
         statement.executeUpdate();
+
+        // LOGGING: Einmal-Passwort erzeugt
+        String description = String.format("Einmal-Passwort für Benutzer '%s' wurde erzeugt (Passwort-Reset angefordert).", username);
+        LogService.log("USER_PASSWORD_RESET", description);
     }
 }

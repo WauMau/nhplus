@@ -1,11 +1,15 @@
 package de.hitec.nhplus.datastorage;
 
-import de.hitec.nhplus.model.Patient;
-import de.hitec.nhplus.utils.DateConverter;
-
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
+
+import de.hitec.nhplus.logging.LogService;
+import de.hitec.nhplus.model.Patient;
+import de.hitec.nhplus.utils.DateConverter;
 
 /**
  * Implements the Interface <code>DaoImp</code>. Overrides methods to generate specific <code>PreparedStatements</code>,
@@ -23,11 +27,83 @@ public class PatientDao extends DaoImp<Patient> {
     }
 
     /**
-     * Generates a <code>PreparedStatement</code> to persist the given object of <code>Patient</code>.
-     *
-     * @param patient Object of <code>Patient</code> to persist.
-     * @return <code>PreparedStatement</code> to insert the given patient.
+     * Intercepts the update process to log precise changes ("Before -> After") 
+     * before delegating the actual execution to the superclass.
      */
+    @Override
+    public void update(Patient newPatient) throws SQLException {
+        // 1. Vor dem Update: Den alten Zustand frisch aus der DB lesen
+        Patient oldPatient = this.read(newPatient.getPid());
+
+        // 2. Das eigentliche SQL-Update über die Superklasse ausführen
+        super.update(newPatient);
+
+        // 3. Nach erfolgreichem Update: Werte vergleichen und Log-Text bauen
+        if (oldPatient != null) {
+            StringBuilder changes = new StringBuilder();
+
+            if (!oldPatient.getFirstName().equals(newPatient.getFirstName())) {
+                changes.append(String.format("Vorname: '%s' ➡️ '%s'; ", 
+                    oldPatient.getFirstName(), newPatient.getFirstName()));
+            }
+            if (!oldPatient.getSurname().equals(newPatient.getSurname())) {
+                changes.append(String.format("Nachname: '%s' ➡️ '%s'; ", 
+                    oldPatient.getSurname(), newPatient.getSurname()));
+            }
+            if (!oldPatient.getDateOfBirth().equals(newPatient.getDateOfBirth())) {
+                changes.append(String.format("Geburtsdatum: '%s' ➡️ '%s'; ", 
+                    oldPatient.getDateOfBirth(), newPatient.getDateOfBirth()));
+            }
+            if (!oldPatient.getCareLevel().equals(newPatient.getCareLevel())) {
+                changes.append(String.format("Pflegegrad: '%s' ➡️ '%s'; ", 
+                    oldPatient.getCareLevel(), newPatient.getCareLevel()));
+            }
+            if (!oldPatient.getRoomNumber().equals(newPatient.getRoomNumber())) {
+                changes.append(String.format("Raum: '%s' ➡️ '%s'; ", 
+                    oldPatient.getRoomNumber(), newPatient.getRoomNumber()));
+            }
+            if (!oldPatient.getAssets().equals(newPatient.getAssets())) {
+                changes.append(String.format("Vermögensstand: '%s' ➡️ '%s'; ", 
+                    oldPatient.getAssets(), newPatient.getAssets()));
+            }
+
+            if (changes.length() > 0) {
+                String logDescription = String.format("Patient (ID: %d) geändert. Details: %s", 
+                    newPatient.getPid(), changes.toString());
+                LogService.log("PATIENT_UPDATE", logDescription);
+            }
+        }
+    }
+
+    /**
+     * Overrides the delete process to log which patient was deleted.
+     * 
+     * @param pid ID of the patient to be deleted.
+     */
+    @Override
+    public void deleteById(long pid) throws SQLException {
+        // 1. Vor dem Löschen Daten lesen
+        Patient patientToDelete = this.read(pid);
+
+        // 2. Löschen ausführen
+        super.deleteById(pid);
+
+        // 3. Log schreiben
+        if (patientToDelete != null) {
+            String description = String.format(
+                "Patient %s, %s (PID: %d) wurde gelöscht. Letzte Daten: Pflegegrad: %s, Raum: %s",
+                patientToDelete.getSurname(),
+                patientToDelete.getFirstName(),
+                patientToDelete.getPid(),
+                patientToDelete.getCareLevel(),
+                patientToDelete.getRoomNumber()
+            );
+            
+            // Nutzt den LogService analog zum Update
+            LogService.log("PATIENT_DELETE", description);
+        }
+    }
+
     @Override
     protected PreparedStatement getCreateStatement(Patient patient) {
         PreparedStatement preparedStatement = null;
@@ -47,12 +123,6 @@ public class PatientDao extends DaoImp<Patient> {
         return preparedStatement;
     }
 
-    /**
-     * Generates a <code>PreparedStatement</code> to query a patient by a given patient id (pid).
-     *
-     * @param pid Patient id to query.
-     * @return <code>PreparedStatement</code> to query the patient.
-     */
     @Override
     protected PreparedStatement getReadByIDStatement(long pid) {
         PreparedStatement preparedStatement = null;
@@ -66,12 +136,6 @@ public class PatientDao extends DaoImp<Patient> {
         return preparedStatement;
     }
 
-    /**
-     * Maps a <code>ResultSet</code> of one patient to an object of <code>Patient</code>.
-     *
-     * @param result ResultSet with a single row. Columns will be mapped to an object of class <code>Patient</code>.
-     * @return Object of class <code>Patient</code> with the data from the resultSet.
-     */
     @Override
     protected Patient getInstanceFromResultSet(ResultSet result) throws SQLException {
         return new Patient(
@@ -84,11 +148,6 @@ public class PatientDao extends DaoImp<Patient> {
                 result.getString("assets"));
     }
 
-    /**
-     * Generates a <code>PreparedStatement</code> to query all patients.
-     *
-     * @return <code>PreparedStatement</code> to query all patients.
-     */
     @Override
     protected PreparedStatement getReadAllStatement() {
         PreparedStatement statement = null;
@@ -101,13 +160,6 @@ public class PatientDao extends DaoImp<Patient> {
         return statement;
     }
 
-    /**
-     * Maps a <code>ResultSet</code> of all patients to an <code>ArrayList</code> of <code>Patient</code> objects.
-     *
-     * @param result ResultSet with all rows. The Columns will be mapped to objects of class <code>Patient</code>.
-     * @return <code>ArrayList</code> with objects of class <code>Patient</code> of all rows in the
-     * <code>ResultSet</code>.
-     */
     @Override
     protected ArrayList<Patient> getListFromResultSet(ResultSet result) throws SQLException {
         ArrayList<Patient> list = new ArrayList<>();
@@ -126,13 +178,6 @@ public class PatientDao extends DaoImp<Patient> {
         return list;
     }
 
-    /**
-     * Generates a <code>PreparedStatement</code> to update the given patient, identified
-     * by the id of the patient (pid).
-     *
-     * @param patient Patient object to update.
-     * @return <code>PreparedStatement</code> to update the given patient.
-     */
     @Override
     protected PreparedStatement getUpdateStatement(Patient patient) {
         PreparedStatement preparedStatement = null;
@@ -160,12 +205,6 @@ public class PatientDao extends DaoImp<Patient> {
         return preparedStatement;
     }
 
-    /**
-     * Generates a <code>PreparedStatement</code> to delete a patient with the given id.
-     *
-     * @param pid Id of the patient to delete.
-     * @return <code>PreparedStatement</code> to delete patient with the given id.
-     */
     @Override
     protected PreparedStatement getDeleteStatement(long pid) {
         PreparedStatement preparedStatement = null;

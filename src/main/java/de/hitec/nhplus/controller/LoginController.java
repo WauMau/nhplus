@@ -11,7 +11,6 @@ import de.hitec.nhplus.model.User;
 import de.hitec.nhplus.utils.PasswordUtil;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
@@ -44,17 +43,12 @@ public class LoginController {
 
                 if (user.isMustChangePassword()) {
                     try {
-                        FXMLLoader loader = new FXMLLoader(
-                                Main.class.getResource("/de/hitec/nhplus/ChangePasswordView.fxml"));
-
-                        Parent root = loader.load();
+                        FXMLLoader loader = new FXMLLoader(Main.class.getResource("/de/hitec/nhplus/ChangePasswordView.fxml"));
+                        Scene scene = new Scene(loader.load());
+                        Stage stage = new Stage();
                         ChangePasswordController controller = loader.getController();
                         controller.setUser(user);
-
-                        Stage stage = new Stage();
-                        stage.setTitle("Passwort ändern");
-                        stage.setScene(new Scene(root));
-                        stage.setResizable(false);
+                        stage.setScene(scene);
                         stage.showAndWait();
 
                         if (user.isMustChangePassword()) {
@@ -69,10 +63,12 @@ public class LoginController {
                     }
                 }
 
+                // Benutzer wird in der Session hinterlegt, damit das Logging-System weiß, wer eingeloggt ist
                 Session.setCurrentUser(user);
 
-                // 🔥 HIER IST DAS LOGGING
-                LogService.log("LOGIN", "User hat sich eingeloggt");
+                // Unterscheidung, ob sich ein Admin oder ein normaler User eingeloggt hat
+                String roleText = user.isAdmin() ? "Admin" : "User";
+                LogService.log("LOGIN", roleText + " [" + username + "] hat sich eingeloggt");
 
                 openMainWindow();
 

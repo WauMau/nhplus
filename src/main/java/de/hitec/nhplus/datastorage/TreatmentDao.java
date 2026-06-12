@@ -1,5 +1,6 @@
 package de.hitec.nhplus.datastorage;
 
+import de.hitec.nhplus.logging.LogService;
 import de.hitec.nhplus.model.Treatment;
 import de.hitec.nhplus.utils.DateConverter;
 
@@ -22,6 +23,101 @@ public class TreatmentDao extends DaoImp<Treatment> {
      */
     public TreatmentDao(Connection connection) {
         super(connection);
+    }
+
+    /**
+     * Intercepts the creation process to log when a new treatment is added.
+     */
+    @Override
+    public void create(Treatment treatment) throws SQLException {
+        // 1. Eigentliches Erstellen über die Superklasse ausführen
+        super.create(treatment);
+
+        // 2. Erstellung im Log protokollieren
+        String description = String.format("Neue Behandlung für Patient (PID: %d) am %s angelegt. Kurzbeschreibung: '%s'",
+                treatment.getPid(), treatment.getDate(), treatment.getDescription());
+        LogService.log("TREATMENT_CREATE", description);
+    }
+
+    /**
+     * Intercepts the update process to log precise changes ("Before -> After")
+     * before delegating the actual execution to the superclass.
+     */
+    @Override
+    public void update(Treatment newTreatment) throws SQLException {
+        // 1. Vor dem Update: Den alten Zustand frisch aus der DB lesen
+        Treatment oldTreatment = this.read(newTreatment.getTid());
+
+        // 2. Das eigentliche SQL-Update über die Superklasse ausführen
+        super.update(newTreatment);
+
+        // 3. Nach erfolgreichem Update: Werte vergleichen und Log-Text bauen
+        if (oldTreatment != null) {
+            StringBuilder changes = new StringBuilder();
+
+            // Datum vergleichen
+            if (!oldTreatment.getDate().equals(newTreatment.getDate())) {
+                changes.append(String.format("Datum: '%s' ➡️ '%s'; ", 
+                        oldTreatment.getDate(), newTreatment.getDate()));
+            }
+
+            // Beginn vergleichen
+            if (!oldTreatment.getBegin().equals(newTreatment.getBegin())) {
+                changes.append(String.format("Beginn: '%s' ➡️ '%s'; ", 
+                        oldTreatment.getBegin(), newTreatment.getBegin()));
+            }
+
+            // Ende vergleichen
+            if (!oldTreatment.getEnd().equals(newTreatment.getEnd())) {
+                changes.append(String.format("Ende: '%s' ➡️ '%s'; ", 
+                        oldTreatment.getEnd(), newTreatment.getEnd()));
+            }
+
+            // Kurzbeschreibung vergleichen
+            if (!oldTreatment.getDescription().equals(newTreatment.getDescription())) {
+                changes.append(String.format("Beschreibung: '%s' ➡️ '%s'; ", 
+                        oldTreatment.getDescription(), newTreatment.getDescription()));
+            }
+
+            // Bemerkungen vergleichen
+            if (!oldTreatment.getRemarks().equals(newTreatment.getRemarks())) {
+                changes.append(String.format("Bemerkung: '%s' ➡️ '%s'; ", 
+                        oldTreatment.getRemarks(), newTreatment.getRemarks()));
+            }
+
+            // 4. Nur loggen, wenn sich auch wirklich etwas geändert hat
+            if (changes.length() > 0) {
+                String logDescription = String.format("Behandlung (TID: %d) für Patient (PID: %d) geändert. Details: %s", 
+                        newTreatment.getTid(), newTreatment.getPid(), changes.toString());
+                
+                LogService.log("TREATMENT_UPDATE", logDescription);
+            }
+        }
+    }
+
+    /**
+     * Overrides the delete process to log which treatment was deleted.
+     */
+    @Override
+    public void deleteById(long tid) throws SQLException {
+        // 1. Vor dem Löschen die Behandlungsdaten sichern
+        Treatment treatmentToDelete = this.read(tid);
+
+        // 2. Das eigentliche Löschen in der Datenbank ausführen
+        super.deleteById(tid);
+
+        // 3. Den Löschvorgang im Log protokollieren
+        if (treatmentToDelete != null) {
+            String description = String.format(
+                "Behandlung (TID: %d) für Patient (PID: %d) am %s komplett gelöscht. Letzte Daten: '%s'",
+                treatmentToDelete.getTid(),
+                treatmentToDelete.getPid(),
+                treatmentToDelete.getDate(),
+                treatmentToDelete.getDescription()
+            );
+            
+            LogService.log("TREATMENT_DELETE", description);
+        }
     }
 
     /**
