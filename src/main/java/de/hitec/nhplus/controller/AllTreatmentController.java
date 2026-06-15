@@ -44,6 +44,9 @@ public class AllTreatmentController {
     private TableColumn<Treatment, String> columnDescription;
 
     @FXML
+    private TableColumn<Treatment, String> columnCaregiver;
+
+    @FXML
     private ComboBox<String> comboBoxPatientSelection;
 
     @FXML
@@ -66,6 +69,7 @@ public class AllTreatmentController {
         this.columnBegin.setCellValueFactory(new PropertyValueFactory<>("begin"));
         this.columnEnd.setCellValueFactory(new PropertyValueFactory<>("end"));
         this.columnDescription.setCellValueFactory(new PropertyValueFactory<>("description"));
+        this.columnCaregiver.setCellValueFactory(new PropertyValueFactory<>("caregiverName"));
         this.tableView.setItems(this.treatments);
 
         // Disabling the button to delete treatments as long, as no treatment was selected.
@@ -79,7 +83,6 @@ public class AllTreatmentController {
 
     public void readAllAndShowInTableView() {
         this.treatments.clear();
-        comboBoxPatientSelection.getSelectionModel().select(0);
         this.dao = DaoFactory.getDaoFactory().createTreatmentDao();
         try {
             this.treatments.addAll(dao.readAll());

@@ -50,6 +50,9 @@ public class AllPatientController {
     private TableColumn<Patient, String> columnAssets;
 
     @FXML
+    private TableColumn<Patient, String> columnLastTreatment;
+
+    @FXML
     private Button buttonDelete;
 
     @FXML
@@ -105,6 +108,8 @@ public class AllPatientController {
 
         this.columnAssets.setCellValueFactory(new PropertyValueFactory<>("assets"));
         this.columnAssets.setCellFactory(TextFieldTableCell.forTableColumn());
+
+        this.columnLastTreatment.setCellValueFactory(new PropertyValueFactory<>("lastTreatmentDate"));
 
         //Anzeigen der Daten
         this.tableView.setItems(this.patients);
@@ -216,6 +221,9 @@ public class AllPatientController {
         this.dao = DaoFactory.getDaoFactory().createPatientDao();
         try {
             this.patients.addAll(this.dao.readAll());
+            for (Patient patient : this.patients) {
+                patient.setLastTreatmentDate(this.dao.getLastTreatmentDate(patient.getPid()));
+            }
         } catch (SQLException exception) {
             exception.printStackTrace();
         }

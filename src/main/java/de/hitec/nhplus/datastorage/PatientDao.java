@@ -205,6 +205,19 @@ public class PatientDao extends DaoImp<Patient> {
         return preparedStatement;
     }
 
+    public String getLastTreatmentDate(long pid) throws SQLException {
+        final String SQL = "SELECT treatment_date || ', ' || begin as letzte FROM treatment " +
+                "WHERE pid = ? ORDER BY treatment_date DESC, begin DESC LIMIT 1";
+        try (PreparedStatement statement = this.connection.prepareStatement(SQL)) {
+            statement.setLong(1, pid);
+            ResultSet result = statement.executeQuery();
+            if (result.next()) {
+                return result.getString("letzte");
+            }
+        }
+        return "-";
+    }
+
     @Override
     protected PreparedStatement getDeleteStatement(long pid) {
         PreparedStatement preparedStatement = null;

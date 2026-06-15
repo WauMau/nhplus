@@ -74,7 +74,8 @@ public class SetUpDB {
                 "begin TEXT NOT NULL, " +
                 "end TEXT NOT NULL, " +
                 "description TEXT NOT NULL, " +
-                "remark TEXT NOT NULL," +
+                "remark TEXT NOT NULL, " +
+                "caregiverId INTEGER, " +
                 "FOREIGN KEY (pid) REFERENCES patient (pid) ON DELETE CASCADE" +
                 ");";
 

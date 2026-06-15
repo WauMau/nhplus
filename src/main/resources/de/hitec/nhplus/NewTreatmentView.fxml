@@ -35,6 +35,12 @@
                   <Font name="System Bold" size="13.0" />
                </font>
             </Label>
+            <Label text="Pflegekraft:" GridPane.rowIndex="1">
+               <font>
+                  <Font name="System Bold" size="13.0" />
+               </font>
+            </Label>
+            <ComboBox fx:id="comboBoxCaregiver" prefWidth="192.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
             <Label text="Nachname:" GridPane.columnIndex="2">
                <font>
                   <Font name="System Bold" size="13.0" />

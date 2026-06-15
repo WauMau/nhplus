@@ -130,8 +130,8 @@ public class TreatmentDao extends DaoImp<Treatment> {
     protected PreparedStatement getCreateStatement(Treatment treatment) {
         PreparedStatement preparedStatement = null;
         try {
-            final String SQL = "INSERT INTO treatment (pid, treatment_date, begin, end, description, remark) " +
-                    "VALUES (?, ?, ?, ?, ?, ?)";
+            final String SQL = "INSERT INTO treatment (pid, treatment_date, begin, end, description, remark, caregiverId) " +
+                    "VALUES (?, ?, ?, ?, ?, ?, ?)";
             preparedStatement = this.connection.prepareStatement(SQL);
             preparedStatement.setLong(1, treatment.getPid());
             preparedStatement.setString(2, treatment.getDate());
@@ -139,6 +139,7 @@ public class TreatmentDao extends DaoImp<Treatment> {
             preparedStatement.setString(4, treatment.getEnd());
             preparedStatement.setString(5, treatment.getDescription());
             preparedStatement.setString(6, treatment.getRemarks());
+            preparedStatement.setLong(7, treatment.getCaregiverId());
         } catch (SQLException exception) {
             exception.printStackTrace();
         }
@@ -155,7 +156,13 @@ public class TreatmentDao extends DaoImp<Treatment> {
     protected PreparedStatement getReadByIDStatement(long tid) {
         PreparedStatement preparedStatement = null;
         try {
-            final String SQL = "SELECT * FROM treatment WHERE tid = ?";
+            final String SQL =
+                "SELECT t.tid, t.pid, t.treatment_date, t.begin, t.end, t.description, t.remark, " +
+                "COALESCE(t.caregiverId, 0) as caregiverId, " +
+                "COALESCE(p.firstname || ' ' || p.surname, '-') as caregiver_name, " +
+                "COALESCE(p.telephone, '-') as caregiver_telephone " +
+                "FROM treatment t LEFT JOIN pfleger p ON t.caregiverId = p.cid " +
+                "WHERE t.tid = ?";
             preparedStatement = this.connection.prepareStatement(SQL);
             preparedStatement.setLong(1, tid);
         } catch (SQLException exception) {
@@ -176,7 +183,8 @@ public class TreatmentDao extends DaoImp<Treatment> {
         LocalTime begin = DateConverter.convertStringToLocalTime(result.getString("begin"));
         LocalTime end = DateConverter.convertStringToLocalTime(result.getString("end"));
         return new Treatment(result.getLong("tid"), result.getLong("pid"),
-                date, begin, end, result.getString("description"), result.getString("remark"));
+                date, begin, end, result.getString("description"), result.getString("remark"),
+                result.getLong("caregiverId"), result.getString("caregiver_name"), result.getString("caregiver_telephone"));
     }
 
     /**
@@ -188,7 +196,12 @@ public class TreatmentDao extends DaoImp<Treatment> {
     protected PreparedStatement getReadAllStatement() {
         PreparedStatement statement = null;
         try {
-            final String SQL = "SELECT * FROM treatment";
+            final String SQL =
+                "SELECT t.tid, t.pid, t.treatment_date, t.begin, t.end, t.description, t.remark, " +
+                "COALESCE(t.caregiverId, 0) as caregiverId, " +
+                "COALESCE(p.firstname || ' ' || p.surname, '-') as caregiver_name, " +
+                "COALESCE(p.telephone, '-') as caregiver_telephone " +
+                "FROM treatment t LEFT JOIN pfleger p ON t.caregiverId = p.cid";
             statement = this.connection.prepareStatement(SQL);
         } catch (SQLException exception) {
             exception.printStackTrace();
@@ -212,7 +225,8 @@ public class TreatmentDao extends DaoImp<Treatment> {
             LocalTime begin = DateConverter.convertStringToLocalTime(result.getString("begin"));
             LocalTime end = DateConverter.convertStringToLocalTime(result.getString("end"));
             Treatment treatment = new Treatment(result.getLong("tid"), result.getLong("pid"),
-                    date, begin, end, result.getString("description"), result.getString("remark"));
+                    date, begin, end, result.getString("description"), result.getString("remark"),
+                    result.getLong("caregiverId"), result.getString("caregiver_name"), result.getString("caregiver_telephone"));
             list.add(treatment);
         }
         return list;
@@ -227,7 +241,13 @@ public class TreatmentDao extends DaoImp<Treatment> {
     private PreparedStatement getReadAllTreatmentsOfOnePatientByPid(long pid) {
         PreparedStatement preparedStatement = null;
         try {
-            final String SQL = "SELECT * FROM treatment WHERE pid = ?";
+            final String SQL =
+                "SELECT t.tid, t.pid, t.treatment_date, t.begin, t.end, t.description, t.remark, " +
+                "COALESCE(t.caregiverId, 0) as caregiverId, " +
+                "COALESCE(p.firstname || ' ' || p.surname, '-') as caregiver_name, " +
+                "COALESCE(p.telephone, '-') as caregiver_telephone " +
+                "FROM treatment t LEFT JOIN pfleger p ON t.caregiverId = p.cid " +
+                "WHERE t.pid = ?";
             preparedStatement = this.connection.prepareStatement(SQL);
             preparedStatement.setLong(1, pid);
         } catch (SQLException exception) {
@@ -269,7 +289,8 @@ public class TreatmentDao extends DaoImp<Treatment> {
                             "begin = ?, " +
                             "end = ?, " +
                             "description = ?, " +
-                            "remark = ? " +
+                            "remark = ?, " +
+                            "caregiverId = ? " +
                             "WHERE tid = ?";
             preparedStatement = this.connection.prepareStatement(SQL);
             preparedStatement.setLong(1, treatment.getPid());
@@ -278,7 +299,8 @@ public class TreatmentDao extends DaoImp<Treatment> {
             preparedStatement.setString(4, treatment.getEnd());
             preparedStatement.setString(5, treatment.getDescription());
             preparedStatement.setString(6, treatment.getRemarks());
-            preparedStatement.setLong(7, treatment.getTid());
+            preparedStatement.setLong(7, treatment.getCaregiverId());
+            preparedStatement.setLong(8, treatment.getTid());
         } catch (SQLException exception) {
             exception.printStackTrace();
         }

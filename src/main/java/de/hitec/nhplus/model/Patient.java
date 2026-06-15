@@ -17,6 +17,7 @@ public class Patient extends Person {
     private final SimpleStringProperty careLevel;
     private final SimpleStringProperty roomNumber;
     private final SimpleStringProperty assets;
+    private final SimpleStringProperty lastTreatmentDate;
     private final List<Treatment> allTreatments = new ArrayList<>();
 
     /**
@@ -37,6 +38,7 @@ public class Patient extends Person {
         this.careLevel = new SimpleStringProperty(careLevel);
         this.roomNumber = new SimpleStringProperty(roomNumber);
         this.assets = new SimpleStringProperty(assets);
+        this.lastTreatmentDate = new SimpleStringProperty("-");
     }
 
     /**
@@ -58,6 +60,7 @@ public class Patient extends Person {
         this.careLevel = new SimpleStringProperty(careLevel);
         this.roomNumber = new SimpleStringProperty(roomNumber);
         this.assets = new SimpleStringProperty(assets);
+        this.lastTreatmentDate = new SimpleStringProperty("-");
     }
 
     public long getPid() {
@@ -120,6 +123,18 @@ public class Patient extends Person {
 
     public void setAssets(String assets) {
         this.assets.set(assets);
+    }
+
+    public String getLastTreatmentDate() {
+        return lastTreatmentDate.get();
+    }
+
+    public SimpleStringProperty lastTreatmentDateProperty() {
+        return lastTreatmentDate;
+    }
+
+    public void setLastTreatmentDate(String lastTreatmentDate) {
+        this.lastTreatmentDate.set(lastTreatmentDate);
     }
 
     /**
