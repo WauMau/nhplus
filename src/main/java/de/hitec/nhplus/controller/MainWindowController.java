@@ -67,7 +67,18 @@ public class MainWindowController {
     }
 
     @FXML
-    private void handleShowLogs(ActionEvent event) {   // <-- HIER rein
+    private void handleShowAllCaregivers(ActionEvent event) {
+        FXMLLoader loader = new FXMLLoader(Main.class.getResource("/de/hitec/nhplus/AllCaregiverView.fxml"));
+
+        try {
+            mainBorderPane.setCenter(loader.load());
+        } catch (IOException exception) {
+            exception.printStackTrace();
+        }
+    }
+
+    @FXML
+    private void handleShowLogs(ActionEvent event) {
         FXMLLoader loader = new FXMLLoader(Main.class.getResource("/de/hitec/nhplus/LogView.fxml"));
 
         try {

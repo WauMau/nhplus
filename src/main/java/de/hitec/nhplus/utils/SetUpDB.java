@@ -5,10 +5,12 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import de.hitec.nhplus.datastorage.CaregiverDao;
 import de.hitec.nhplus.datastorage.ConnectionBuilder;
 import de.hitec.nhplus.datastorage.DaoFactory;
 import de.hitec.nhplus.datastorage.PatientDao;
 import de.hitec.nhplus.datastorage.TreatmentDao;
+import de.hitec.nhplus.model.Caregiver;
 import de.hitec.nhplus.model.Patient;
 import de.hitec.nhplus.model.Treatment;
 import static de.hitec.nhplus.utils.DateConverter.convertStringToLocalDate;
@@ -25,11 +27,13 @@ public class SetUpDB {
         setUpTableTreatment(connection);
         setUpTableUsers(connection);
         setUpTableLogs(connection);
+        setUpTablePfleger(connection);
 
         setUpPatients();
         setUpTreatments();
         setUpUsers();
         setUpLogs();
+        setUpPfleger();
     }
 
     public static void wipeDb(Connection connection) {
@@ -38,6 +42,7 @@ public class SetUpDB {
             statement.execute("DROP TABLE IF EXISTS treatment");
             statement.execute("DROP TABLE IF EXISTS patient");
             statement.execute("DROP TABLE IF EXISTS users");
+            statement.execute("DROP TABLE IF EXISTS pfleger");
         } catch (SQLException exception) {
             System.out.println(exception.getMessage());
         }
@@ -205,6 +210,32 @@ public class SetUpDB {
             ps.setString(4, "Test Log Eintrag");
             ps.executeUpdate();
 
+        } catch (SQLException exception) {
+            exception.printStackTrace();
+        }
+    }
+
+    private static void setUpTablePfleger(Connection connection) {
+        final String SQL = "CREATE TABLE IF NOT EXISTS pfleger (" +
+                "cid INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                "firstname TEXT NOT NULL, " +
+                "surname TEXT NOT NULL, " +
+                "telephone TEXT NOT NULL" +
+                ");";
+
+        try (Statement statement = connection.createStatement()) {
+            statement.execute(SQL);
+        } catch (SQLException exception) {
+            System.out.println(exception.getMessage());
+        }
+    }
+
+    private static void setUpPfleger() {
+        try {
+            CaregiverDao dao = DaoFactory.getDaoFactory().createCaregiverDao();
+            dao.create(new Caregiver("Anna", "Schmidt", "0151-11223344"));
+            dao.create(new Caregiver("Thomas", "Müller", "0152-55667788"));
+            dao.create(new Caregiver("Maria", "Weber", "0153-99001122"));
         } catch (SQLException exception) {
             exception.printStackTrace();
         }
