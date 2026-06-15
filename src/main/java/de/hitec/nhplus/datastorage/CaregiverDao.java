@@ -1,17 +1,97 @@
 package de.hitec.nhplus.datastorage;
 
-import de.hitec.nhplus.model.Caregiver;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
+import de.hitec.nhplus.logging.LogService;
+import de.hitec.nhplus.model.Caregiver;
+
 public class CaregiverDao extends DaoImp<Caregiver> {
 
     public CaregiverDao(Connection connection) {
         super(connection);
+    }
+
+    /**
+     * Intercepts the creation process to log when a new caregiver is added.
+     */
+    @Override
+    public void create(Caregiver caregiver) throws SQLException {
+        // 1. Eigentliches Erstellen über die Superklasse ausführen
+        super.create(caregiver);
+
+        // 2. Erstellung im Log protokollieren
+        String description = String.format(
+            "Neue Pflegekraft '%s %s' (Telefon: %s) wurde angelegt.",
+            caregiver.getFirstName(), caregiver.getSurname(), caregiver.getTelephone()
+        );
+        LogService.log("CAREGIVER_CREATE", description);
+    }
+
+    /**
+     * Intercepts the update process to log precise changes ("Before -> After")
+     * before delegating the actual execution to the superclass.
+     */
+    @Override
+    public void update(Caregiver newCaregiver) throws SQLException {
+        // 1. Vor dem Update: Den alten Zustand frisch aus der DB lesen
+        Caregiver oldCaregiver = this.read(newCaregiver.getCid());
+
+        // 2. Das eigentliche SQL-Update über die Superklasse ausführen
+        super.update(newCaregiver);
+
+        // 3. Nach erfolgreichem Update: Werte vergleichen und Log-Text bauen
+        if (oldCaregiver != null) {
+            StringBuilder changes = new StringBuilder();
+
+            if (!oldCaregiver.getFirstName().equals(newCaregiver.getFirstName())) {
+                changes.append(String.format("Vorname: '%s' ➡️ '%s'; ",
+                    oldCaregiver.getFirstName(), newCaregiver.getFirstName()));
+            }
+            if (!oldCaregiver.getSurname().equals(newCaregiver.getSurname())) {
+                changes.append(String.format("Nachname: '%s' ➡️ '%s'; ",
+                    oldCaregiver.getSurname(), newCaregiver.getSurname()));
+            }
+            if (!oldCaregiver.getTelephone().equals(newCaregiver.getTelephone())) {
+                changes.append(String.format("Telefon: '%s' ➡️ '%s'; ",
+                    oldCaregiver.getTelephone(), newCaregiver.getTelephone()));
+            }
+
+            if (changes.length() > 0) {
+                String description = String.format(
+                    "Pflegekraft (ID: %d) geändert. Details: %s",
+                    newCaregiver.getCid(), changes.toString()
+                );
+                LogService.log("CAREGIVER_UPDATE", description);
+            }
+        }
+    }
+
+    /**
+     * Overrides the delete process to log which caregiver was deleted.
+     */
+    @Override
+    public void deleteById(long cid) throws SQLException {
+        // 1. Vor dem Löschen Daten lesen
+        Caregiver caregiverToDelete = this.read(cid);
+
+        // 2. Löschen ausführen
+        super.deleteById(cid);
+
+        // 3. Log schreiben
+        if (caregiverToDelete != null) {
+            String description = String.format(
+                "Pflegekraft '%s %s' (ID: %d, Telefon: %s) wurde gelöscht.",
+                caregiverToDelete.getFirstName(),
+                caregiverToDelete.getSurname(),
+                caregiverToDelete.getCid(),
+                caregiverToDelete.getTelephone()
+            );
+            LogService.log("CAREGIVER_DELETE", description);
+        }
     }
 
     @Override

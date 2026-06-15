@@ -41,7 +41,7 @@ public class TreatmentDao extends DaoImp<Treatment> {
 
     /**
      * Intercepts the update process to log precise changes ("Before -> After")
-     * before delegating the actual execution to the superclass.
+     * including caregiver assignments before delegating execution to the superclass.
      */
     @Override
     public void update(Treatment newTreatment) throws SQLException {
@@ -85,6 +85,19 @@ public class TreatmentDao extends DaoImp<Treatment> {
                         oldTreatment.getRemarks(), newTreatment.getRemarks()));
             }
 
+            // NEU: Pfleger-Zuweisung / Pfleger-Wechsel vergleichen
+            if (oldTreatment.getCaregiverId() != newTreatment.getCaregiverId()) {
+                String oldCaregiver = (oldTreatment.getCaregiverName() != null && !oldTreatment.getCaregiverName().equals("-")) 
+                        ? String.format("%s (ID: %d)", oldTreatment.getCaregiverName(), oldTreatment.getCaregiverId()) 
+                        : "Kein Pfleger";
+                
+                String newCaregiver = (newTreatment.getCaregiverName() != null && !newTreatment.getCaregiverName().equals("-")) 
+                        ? String.format("%s (ID: %d)", newTreatment.getCaregiverName(), newTreatment.getCaregiverId()) 
+                        : String.format("Pfleger (ID: %d)", newTreatment.getCaregiverId());
+
+                changes.append(String.format("Zuweisung Pfleger: '%s' ➡️ '%s'; ", oldCaregiver, newCaregiver));
+            }
+
             // 4. Nur loggen, wenn sich auch wirklich etwas geändert hat
             if (changes.length() > 0) {
                 String logDescription = String.format("Behandlung (TID: %d) für Patient (PID: %d) geändert. Details: %s", 
@@ -122,9 +135,6 @@ public class TreatmentDao extends DaoImp<Treatment> {
 
     /**
      * Generates a <code>PreparedStatement</code> to persist the given object of <code>Treatment</code>.
-     *
-     * @param treatment Object of <code>Treatment</code> to persist.
-     * @return <code>PreparedStatement</code> to insert the given patient.
      */
     @Override
     protected PreparedStatement getCreateStatement(Treatment treatment) {
@@ -148,9 +158,6 @@ public class TreatmentDao extends DaoImp<Treatment> {
 
     /**
      * Generates a <code>PreparedStatement</code> to query a treatment by a given treatment id (tid).
-     *
-     * @param tid Treatment id to query.
-     * @return <code>PreparedStatement</code> to query the treatment.
      */
     @Override
     protected PreparedStatement getReadByIDStatement(long tid) {
@@ -173,9 +180,6 @@ public class TreatmentDao extends DaoImp<Treatment> {
 
     /**
      * Maps a <code>ResultSet</code> of one treatment to an object of <code>Treatment</code>.
-     *
-     * @param result ResultSet with a single row. Columns will be mapped to an object of class <code>Treatment</code>.
-     * @return Object of class <code>Treatment</code> with the data from the resultSet.
      */
     @Override
     protected Treatment getInstanceFromResultSet(ResultSet result) throws SQLException {
@@ -189,8 +193,6 @@ public class TreatmentDao extends DaoImp<Treatment> {
 
     /**
      * Generates a <code>PreparedStatement</code> to query all treatments.
-     *
-     * @return <code>PreparedStatement</code> to query all treatments.
      */
     @Override
     protected PreparedStatement getReadAllStatement() {
@@ -212,10 +214,6 @@ public class TreatmentDao extends DaoImp<Treatment> {
     /**
      * Maps a <code>ResultSet</code> of all treatments to an <code>ArrayList</code> with objects of class
      * <code>Treatment</code>.
-     *
-     * @param result ResultSet with all rows. The columns will be mapped to objects of class <code>Treatment</code>.
-     * @return <code>ArrayList</code> with objects of class <code>Treatment</code> of all rows in the
-     * <code>ResultSet</code>.
      */
     @Override
     protected ArrayList<Treatment> getListFromResultSet(ResultSet result) throws SQLException {
@@ -234,9 +232,6 @@ public class TreatmentDao extends DaoImp<Treatment> {
 
     /**
      * Generates a <code>PreparedStatement</code> to query all treatments of a patient with a given patient id (pid).
-     *
-     * @param pid Patient id to query all treatments referencing this id.
-     * @return <code>PreparedStatement</code> to query all treatments of the given patient id (pid).
      */
     private PreparedStatement getReadAllTreatmentsOfOnePatientByPid(long pid) {
         PreparedStatement preparedStatement = null;
@@ -259,10 +254,6 @@ public class TreatmentDao extends DaoImp<Treatment> {
     /**
      * Queries all treatments of a given patient id (pid) and maps the results to an <code>ArrayList</code> with
      * objects of class <code>Treatment</code>.
-     *
-     * @param pid Patient id to query all treatments referencing this id.
-     * @return <code>ArrayList</code> with objects of class <code>Treatment</code> of all rows in the
-     * <code>ResultSet</code>.
      */
     public List<Treatment> readTreatmentsByPid(long pid) throws SQLException {
         try (PreparedStatement statement = getReadAllTreatmentsOfOnePatientByPid(pid);
@@ -274,9 +265,6 @@ public class TreatmentDao extends DaoImp<Treatment> {
     /**
      * Generates a <code>PreparedStatement</code> to update the given treatment, identified
      * by the id of the treatment (tid).
-     *
-     * @param treatment Treatment object to update.
-     * @return <code>PreparedStatement</code> to update the given treatment.
      */
     @Override
     protected PreparedStatement getUpdateStatement(Treatment treatment) {
@@ -309,9 +297,6 @@ public class TreatmentDao extends DaoImp<Treatment> {
 
     /**
      * Generates a <code>PreparedStatement</code> to delete a treatment with the given id.
-     *
-     * @param tid Id of the Treatment to delete.
-     * @return <code>PreparedStatement</code> to delete treatment with the given id.
      */
     @Override
     protected PreparedStatement getDeleteStatement(long tid) {

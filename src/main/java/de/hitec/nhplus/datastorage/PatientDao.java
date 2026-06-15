@@ -12,58 +12,73 @@ import de.hitec.nhplus.model.Patient;
 import de.hitec.nhplus.utils.DateConverter;
 
 /**
- * Implements the Interface <code>DaoImp</code>. Overrides methods to generate specific <code>PreparedStatements</code>,
- * to execute the specific SQL Statements.
+ * Data Access Object (DAO) für die Verwaltung von Patientendaten in der Datenbank.
  */
 public class PatientDao extends DaoImp<Patient> {
 
     /**
-     * The constructor initiates an object of <code>PatientDao</code> and passes the connection to its super class.
+     * Erstellt eine neue Instanz des PatientDao mit der angegebenen Verbindung.
      *
-     * @param connection Object of <code>Connection</code> to execute the SQL-statements.
+     * @param connection Die SQL-Verbindung zur Datenbank.
      */
     public PatientDao(Connection connection) {
         super(connection);
     }
 
     /**
-     * Intercepts the update process to log precise changes ("Before -> After") 
-     * before delegating the actual execution to the superclass.
+     * Erstellt einen neuen Patienten in der Datenbank und protokolliert die Aktion.
+     *
+     * @param patient Der neu anzulegende Patient.
+     * @throws SQLException Bei Fehlern während des Datenbankzugriffs.
+     */
+    @Override
+    public void create(Patient patient) throws SQLException {
+        super.create(patient);
+
+        String description = String.format(
+            "Neuer Patient '%s, %s' (Geburtsdatum: %s, Pflegegrad: %s, Raum: %s) wurde angelegt.",
+            patient.getSurname(), patient.getFirstName(), patient.getDateOfBirth(), patient.getCareLevel(), patient.getRoomNumber()
+        );
+        LogService.log("PATIENT_CREATE", description);
+    }
+
+    /**
+     * Aktualisiert die Daten eines Patienten und protokolliert alle Änderungen im Detail.
+     *
+     * @param newPatient Das Objekt mit den aktualisierten Patientendaten.
+     * @throws SQLException Bei Fehlern während des Datenbankzugriffs.
      */
     @Override
     public void update(Patient newPatient) throws SQLException {
-        // 1. Vor dem Update: Den alten Zustand frisch aus der DB lesen
         Patient oldPatient = this.read(newPatient.getPid());
 
-        // 2. Das eigentliche SQL-Update über die Superklasse ausführen
         super.update(newPatient);
 
-        // 3. Nach erfolgreichem Update: Werte vergleichen und Log-Text bauen
         if (oldPatient != null) {
             StringBuilder changes = new StringBuilder();
 
             if (!oldPatient.getFirstName().equals(newPatient.getFirstName())) {
-                changes.append(String.format("Vorname: '%s' ➡️ '%s'; ", 
+                changes.append(String.format("Vorname: '%s' zu '%s'; ", 
                     oldPatient.getFirstName(), newPatient.getFirstName()));
             }
             if (!oldPatient.getSurname().equals(newPatient.getSurname())) {
-                changes.append(String.format("Nachname: '%s' ➡️ '%s'; ", 
+                changes.append(String.format("Nachname: '%s' zu '%s'; ", 
                     oldPatient.getSurname(), newPatient.getSurname()));
             }
             if (!oldPatient.getDateOfBirth().equals(newPatient.getDateOfBirth())) {
-                changes.append(String.format("Geburtsdatum: '%s' ➡️ '%s'; ", 
+                changes.append(String.format("Geburtsdatum: '%s' zu '%s'; ", 
                     oldPatient.getDateOfBirth(), newPatient.getDateOfBirth()));
             }
             if (!oldPatient.getCareLevel().equals(newPatient.getCareLevel())) {
-                changes.append(String.format("Pflegegrad: '%s' ➡️ '%s'; ", 
+                changes.append(String.format("Pflegegrad: '%s' zu '%s'; ", 
                     oldPatient.getCareLevel(), newPatient.getCareLevel()));
             }
             if (!oldPatient.getRoomNumber().equals(newPatient.getRoomNumber())) {
-                changes.append(String.format("Raum: '%s' ➡️ '%s'; ", 
+                changes.append(String.format("Raum: '%s' zu '%s'; ", 
                     oldPatient.getRoomNumber(), newPatient.getRoomNumber()));
             }
             if (!oldPatient.getAssets().equals(newPatient.getAssets())) {
-                changes.append(String.format("Vermögensstand: '%s' ➡️ '%s'; ", 
+                changes.append(String.format("Vermögensstand: '%s' zu '%s'; ", 
                     oldPatient.getAssets(), newPatient.getAssets()));
             }
 
@@ -76,19 +91,17 @@ public class PatientDao extends DaoImp<Patient> {
     }
 
     /**
-     * Overrides the delete process to log which patient was deleted.
-     * 
-     * @param pid ID of the patient to be deleted.
+     * Löscht einen Patienten anhand seiner ID und protokolliert den Löschvorgang.
+     *
+     * @param pid Die ID des zu löschenden Patienten.
+     * @throws SQLException Bei Fehlern während des Datenbankzugriffs.
      */
     @Override
     public void deleteById(long pid) throws SQLException {
-        // 1. Vor dem Löschen Daten lesen
         Patient patientToDelete = this.read(pid);
 
-        // 2. Löschen ausführen
         super.deleteById(pid);
 
-        // 3. Log schreiben
         if (patientToDelete != null) {
             String description = String.format(
                 "Patient %s, %s (PID: %d) wurde gelöscht. Letzte Daten: Pflegegrad: %s, Raum: %s",
@@ -98,18 +111,21 @@ public class PatientDao extends DaoImp<Patient> {
                 patientToDelete.getCareLevel(),
                 patientToDelete.getRoomNumber()
             );
-            
-            // Nutzt den LogService analog zum Update
             LogService.log("PATIENT_DELETE", description);
         }
     }
 
+    /**
+     * Erzeugt das SQL-Statement zum Einfügen eines neuen Patienten.
+     *
+     * @param patient Der einzufügende Patient.
+     * @return Das vorbereitete PreparedStatement.
+     */
     @Override
     protected PreparedStatement getCreateStatement(Patient patient) {
         PreparedStatement preparedStatement = null;
         try {
-            final String SQL = "INSERT INTO patient (firstname, surname, dateOfBirth, carelevel, roomnumber, assets) " +
-                    "VALUES (?, ?, ?, ?, ?, ?)";
+            final String SQL = "INSERT INTO patient (firstname, surname, dateOfBirth, carelevel, roomnumber, assets) VALUES (?, ?, ?, ?, ?, ?)";
             preparedStatement = this.connection.prepareStatement(SQL);
             preparedStatement.setString(1, patient.getFirstName());
             preparedStatement.setString(2, patient.getSurname());
@@ -123,6 +139,12 @@ public class PatientDao extends DaoImp<Patient> {
         return preparedStatement;
     }
 
+    /**
+     * Erzeugt das SQL-Statement zum Auslesen eines Patienten anhand seiner ID.
+     *
+     * @param pid Die ID des gesuchten Patienten.
+     * @return Das vorbereitete PreparedStatement.
+     */
     @Override
     protected PreparedStatement getReadByIDStatement(long pid) {
         PreparedStatement preparedStatement = null;
@@ -136,6 +158,13 @@ public class PatientDao extends DaoImp<Patient> {
         return preparedStatement;
     }
 
+    /**
+     * Erstellt ein Patienten-Objekt aus den Daten der aktuellen Zeile eines ResultSets.
+     *
+     * @param result Das ResultSet der Datenbankabfrage.
+     * @return Das erzeugte Patient-Objekt.
+     * @throws SQLException Bei Fehlern beim Lesen der Spalten.
+     */
     @Override
     protected Patient getInstanceFromResultSet(ResultSet result) throws SQLException {
         return new Patient(
@@ -148,6 +177,11 @@ public class PatientDao extends DaoImp<Patient> {
                 result.getString("assets"));
     }
 
+    /**
+     * Erzeugt das SQL-Statement zum Auslesen aller Patienten.
+     *
+     * @return Das vorbereitete PreparedStatement.
+     */
     @Override
     protected PreparedStatement getReadAllStatement() {
         PreparedStatement statement = null;
@@ -160,6 +194,13 @@ public class PatientDao extends DaoImp<Patient> {
         return statement;
     }
 
+    /**
+     * Transformiert ein ResultSet in eine Liste von Patienten-Objekten.
+     *
+     * @param result Das ResultSet mit den Datensätzen.
+     * @return Eine Liste aller ausgelesenen Patienten.
+     * @throws SQLException Bei Fehlern während der Iteration oder des Auslesens.
+     */
     @Override
     protected ArrayList<Patient> getListFromResultSet(ResultSet result) throws SQLException {
         ArrayList<Patient> list = new ArrayList<>();
@@ -178,19 +219,17 @@ public class PatientDao extends DaoImp<Patient> {
         return list;
     }
 
+    /**
+     * Erzeugt das SQL-Statement zur Aktualisierung eines bestehenden Patienten.
+     *
+     * @param patient Der zu aktualisierende Patient.
+     * @return Das vorbereitete PreparedStatement.
+     */
     @Override
     protected PreparedStatement getUpdateStatement(Patient patient) {
         PreparedStatement preparedStatement = null;
         try {
-            final String SQL =
-                    "UPDATE patient SET " +
-                            "firstname = ?, " +
-                            "surname = ?, " +
-                            "dateOfBirth = ?, " +
-                            "carelevel = ?, " +
-                            "roomnumber = ?, " +
-                            "assets = ? " +
-                            "WHERE pid = ?";
+            final String SQL = "UPDATE patient SET firstname = ?, surname = ?, dateOfBirth = ?, carelevel = ?, roomnumber = ?, assets = ? WHERE pid = ?";
             preparedStatement = this.connection.prepareStatement(SQL);
             preparedStatement.setString(1, patient.getFirstName());
             preparedStatement.setString(2, patient.getSurname());
@@ -205,9 +244,15 @@ public class PatientDao extends DaoImp<Patient> {
         return preparedStatement;
     }
 
+    /**
+     * Ermittelt das Datum und die Uhrzeit der letzten Behandlung eines Patienten.
+     *
+     * @param pid Die ID des Patienten.
+     * @return Ein String mit Datum und Beginn der Behandlung oder "-" falls keine existiert.
+     * @throws SQLException Bei Fehlern während der Datenbankabfrage.
+     */
     public String getLastTreatmentDate(long pid) throws SQLException {
-        final String SQL = "SELECT treatment_date || ', ' || begin as letzte FROM treatment " +
-                "WHERE pid = ? ORDER BY treatment_date DESC, begin DESC LIMIT 1";
+        final String SQL = "SELECT treatment_date || ', ' || begin as letzte FROM treatment WHERE pid = ? ORDER BY treatment_date DESC, begin DESC LIMIT 1";
         try (PreparedStatement statement = this.connection.prepareStatement(SQL)) {
             statement.setLong(1, pid);
             ResultSet result = statement.executeQuery();
@@ -218,6 +263,12 @@ public class PatientDao extends DaoImp<Patient> {
         return "-";
     }
 
+    /**
+     * Erzeugt das SQL-Statement zum Löschen eines Patienten anhand seiner ID.
+     *
+     * @param pid Die ID des zu löschenden Patienten.
+     * @return Das vorbereitete PreparedStatement.
+     */
     @Override
     protected PreparedStatement getDeleteStatement(long pid) {
         PreparedStatement preparedStatement = null;
