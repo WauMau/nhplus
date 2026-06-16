@@ -53,9 +53,25 @@ public final class PasswordUtil {
         SecureRandom random = new SecureRandom();
         StringBuilder builder = new StringBuilder();
 
-        for (int i = 0; i < 12; i++) {
+        for (int i = 0; i < 8; i++) {
             builder.append(chars.charAt(random.nextInt(chars.length())));
         }
         return builder.toString();
+    }
+
+    public static boolean isValidPassword(String password) {
+        if (password == null || password.length() < 8) {return false;}
+
+        boolean hasUpper = false;
+        boolean hasLower = false;
+        boolean hasSpecial = false;
+
+        for (char c : password.toCharArray()) {
+            if (Character.isUpperCase(c)) hasUpper = true;
+            else if (Character.isLowerCase(c)) hasLower = true;
+            else if (!Character.isLetterOrDigit(c)) hasSpecial = true;
+        }
+
+        return hasUpper && hasLower && hasSpecial;
     }
 }

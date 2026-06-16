@@ -7,8 +7,10 @@ import de.hitec.nhplus.model.Session;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.layout.BorderPane;
+import javafx.stage.Stage;
 
 public class MainWindowController {
 
@@ -85,6 +87,23 @@ public class MainWindowController {
             mainBorderPane.setCenter(loader.load());
         } catch (IOException exception) {
             exception.printStackTrace();
+        }
+    }
+
+    @FXML
+    private void handleLogout() {
+        Session.clear();
+
+        try {
+            FXMLLoader loader = new FXMLLoader(Main.class.getResource("/de/hitec/nhplus/LoginView.fxml")
+            );
+
+            Scene scene = new Scene(loader.load());
+            Stage stage = (Stage) mainBorderPane.getScene().getWindow();
+            stage.setScene(scene);
+
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }

@@ -68,8 +68,7 @@ public class LoginController {
 
                 // Unterscheidung, ob sich ein Admin oder ein normaler User eingeloggt hat
                 String roleText = user.isAdmin() ? "Admin" : "User";
-                LogService.log("LOGIN", roleText + " [" + username + "] hat sich eingeloggt");
-
+                LogService.log("LOGIN", "Benutzer erfolgreich eingeloggt");
                 openMainWindow();
 
             } else {

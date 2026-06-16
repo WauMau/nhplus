@@ -43,8 +43,14 @@ public class ChangePasswordController {
             return;
         }
 
-        if (password.length() < 12) {
-            showError("Passwort muss mindestens 12 Zeichen lang sein.");
+        if (!PasswordUtil.isValidPassword(password)) {
+            showError(
+                    "Das Passwort muss folgende Anforderungen erfüllen:\n\n" +
+                            "- mindestens 8 Zeichen\n" +
+                            "- mindestens einen Großbuchstaben (A-Z)\n" +
+                            "- mindestens einen Kleinbuchstaben (a-z)\n" +
+                            "- mindestens ein Sonderzeichen (!@#$%^&* usw.)"
+            );
             return;
         }
 
@@ -58,14 +64,12 @@ public class ChangePasswordController {
             Stage stage = (Stage) btnSave.getScene().getWindow();
             stage.close();
 
-        } catch (SQLException exception) {
-            exception.printStackTrace();
-            showError("Passwort konnte nicht gespeichert werden.");
+        } catch (SQLException e) {
+            showError("Fehler beim Speichern.");
         }
     }
 
     private void showError(String message) {
-
         Alert alert =
                 new Alert(Alert.AlertType.ERROR);
 

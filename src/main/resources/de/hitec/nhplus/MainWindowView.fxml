@@ -32,6 +32,10 @@
             mnemonicParsing="false"
             text="Logs"
             onAction="#handleShowLogs"/>
+             <Button fx:id="buttonLogout"
+                     mnemonicParsing="false"
+                     text="Logout"
+                     onAction="#handleLogout"/>
             
          </children>
       </VBox>

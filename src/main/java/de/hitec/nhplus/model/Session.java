@@ -11,4 +11,8 @@ public class Session {
     public static void setCurrentUser(User user) {
         currentUser = user;
     }
+
+    public static void clear() {
+        currentUser = null;
+    }
 }
