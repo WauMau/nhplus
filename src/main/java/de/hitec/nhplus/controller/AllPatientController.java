@@ -7,15 +7,20 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.stage.Stage;
 import de.hitec.nhplus.model.Patient;
 import de.hitec.nhplus.utils.DateConverter;
+import de.hitec.nhplus.Main;
 
+import java.io.IOException;
 import java.sql.SQLException;
 import java.time.LocalDate;
 
@@ -57,6 +62,12 @@ public class AllPatientController {
 
     @FXML
     private Button buttonAdd;
+
+    @FXML
+    private Button buttonArchiv;
+
+    @FXML
+    private Button buttonArchivieren;
 
     @FXML
     private TextField textFieldSurname;
@@ -115,10 +126,12 @@ public class AllPatientController {
         this.tableView.setItems(this.patients);
 
         this.buttonDelete.setDisable(true);
+        this.buttonArchivieren.setDisable(true);
         this.tableView.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Patient>() {
             @Override
             public void changed(ObservableValue<? extends Patient> observableValue, Patient oldPatient, Patient newPatient) {;
                 AllPatientController.this.buttonDelete.setDisable(newPatient == null);
+                AllPatientController.this.buttonArchivieren.setDisable(newPatient == null);
             }
         });
 
@@ -244,6 +257,42 @@ public class AllPatientController {
             } catch (SQLException exception) {
                 exception.printStackTrace();
             }
+        }
+    }
+
+    /**
+     * Handles archiving a patient.
+     */
+    @FXML
+    public void handleArchive() {
+        Patient selectedItem = this.tableView.getSelectionModel().getSelectedItem();
+        if (selectedItem != null) {
+            try {
+                this.dao.archive(selectedItem.getPid());
+                this.tableView.getItems().remove(selectedItem);
+            } catch (SQLException exception) {
+                exception.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * Handles opening the archive dialog.
+     */
+    @FXML
+    public void handleShowArchiv() {
+        Stage archiveStage = new Stage();
+        archiveStage.setTitle("Archivierte Patienten");
+        try {
+            FXMLLoader loader = new FXMLLoader(Main.class.getResource("/de/hitec/nhplus/ArchivePatientView.fxml"));
+            archiveStage.setScene(new Scene(loader.load()));
+            ArchivePatientController controller = loader.getController();
+            controller.setMainController(this);
+            archiveStage.showAndWait();
+            // Refresh active patients after dialog closes
+            readAllAndShowInTableView();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 

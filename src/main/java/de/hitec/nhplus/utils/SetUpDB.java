@@ -56,7 +56,9 @@ public class SetUpDB {
                 "dateOfBirth TEXT NOT NULL, " +
                 "carelevel TEXT NOT NULL, " +
                 "roomnumber TEXT NOT NULL, " +
-                "assets TEXT NOT NULL" +
+                "assets TEXT NOT NULL, " +
+                "archived INTEGER NOT NULL DEFAULT 0, " +
+                "archiveDate TEXT" +
                 ");";
 
         try (Statement statement = connection.createStatement()) {

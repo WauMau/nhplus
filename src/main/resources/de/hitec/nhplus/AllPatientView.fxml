@@ -57,10 +57,12 @@
                   <Insets />
                </HBox.margin>
             </GridPane>
-            <HBox alignment="TOP_CENTER" prefWidth="190.0" spacing="10.0">
+            <HBox alignment="TOP_CENTER" prefWidth="290.0" spacing="10.0">
                <children>
                   <Button fx:id="buttonAdd" mnemonicParsing="false" onAction="#handleAdd" prefWidth="90.0" text="Hinzufügen" />
+                  <Button fx:id="buttonArchiv" mnemonicParsing="false" onAction="#handleShowArchiv" prefWidth="90.0" text="Archiv" />
                   <Button fx:id="buttonDelete" mnemonicParsing="false" onAction="#handleDelete" prefWidth="90.0" text="Löschen" />
+                  <Button fx:id="buttonArchivieren" mnemonicParsing="false" onAction="#handleArchive" prefWidth="90.0" text="Archivieren" />
                </children>
             </HBox>
          </children>

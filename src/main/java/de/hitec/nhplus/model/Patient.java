@@ -3,6 +3,9 @@ package de.hitec.nhplus.model;
 import de.hitec.nhplus.utils.DateConverter;
 import javafx.beans.property.SimpleLongProperty;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.ObjectProperty;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -19,6 +22,8 @@ public class Patient extends Person {
     private final SimpleStringProperty assets;
     private final SimpleStringProperty lastTreatmentDate;
     private final List<Treatment> allTreatments = new ArrayList<>();
+    private final SimpleBooleanProperty archived;
+    private final SimpleObjectProperty<LocalDate> archiveDate;
 
     /**
      * Constructor to initiate an object of class <code>Patient</code> with the given parameter. Use this constructor
@@ -39,6 +44,8 @@ public class Patient extends Person {
         this.roomNumber = new SimpleStringProperty(roomNumber);
         this.assets = new SimpleStringProperty(assets);
         this.lastTreatmentDate = new SimpleStringProperty("-");
+        this.archived = new SimpleBooleanProperty(false);
+        this.archiveDate = new SimpleObjectProperty<>(null);
     }
 
     /**
@@ -61,6 +68,8 @@ public class Patient extends Person {
         this.roomNumber = new SimpleStringProperty(roomNumber);
         this.assets = new SimpleStringProperty(assets);
         this.lastTreatmentDate = new SimpleStringProperty("-");
+        this.archived = new SimpleBooleanProperty(false);
+        this.archiveDate = new SimpleObjectProperty<>(null);
     }
 
     public long getPid() {
@@ -135,6 +144,30 @@ public class Patient extends Person {
 
     public void setLastTreatmentDate(String lastTreatmentDate) {
         this.lastTreatmentDate.set(lastTreatmentDate);
+    }
+
+    public boolean isArchived() {
+        return archived.get();
+    }
+
+    public SimpleBooleanProperty archivedProperty() {
+        return archived;
+    }
+
+    public void setArchived(boolean archived) {
+        this.archived.set(archived);
+    }
+
+    public LocalDate getArchiveDate() {
+        return archiveDate.get();
+    }
+
+    public ObjectProperty<LocalDate> archiveDateProperty() {
+        return archiveDate;
+    }
+
+    public void setArchiveDate(LocalDate date) {
+        this.archiveDate.set(date);
     }
 
     /**

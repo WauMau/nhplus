@@ -167,7 +167,7 @@ public class PatientDao extends DaoImp<Patient> {
      */
     @Override
     protected Patient getInstanceFromResultSet(ResultSet result) throws SQLException {
-        return new Patient(
+        Patient patient = new Patient(
                 result.getInt("pid"),
                 result.getString("firstname"),
                 result.getString("surname"),
@@ -175,6 +175,19 @@ public class PatientDao extends DaoImp<Patient> {
                 result.getString("carelevel"),
                 result.getString("roomnumber"),
                 result.getString("assets"));
+        try {
+            int archived = result.getInt("archived");
+            patient.setArchived(archived == 1);
+        } catch (SQLException ignored) {
+        }
+        try {
+            String archiveDateStr = result.getString("archiveDate");
+            if (archiveDateStr != null) {
+                patient.setArchiveDate(DateConverter.convertStringToLocalDate(archiveDateStr));
+            }
+        } catch (SQLException ignored) {
+        }
+        return patient;
     }
 
     /**
@@ -186,7 +199,7 @@ public class PatientDao extends DaoImp<Patient> {
     protected PreparedStatement getReadAllStatement() {
         PreparedStatement statement = null;
         try {
-            final String SQL = "SELECT * FROM patient";
+            final String SQL = "SELECT * FROM patient WHERE archived = 0";
             statement = this.connection.prepareStatement(SQL);
         } catch (SQLException exception) {
             exception.printStackTrace();
@@ -214,9 +227,48 @@ public class PatientDao extends DaoImp<Patient> {
                     result.getString("carelevel"),
                     result.getString("roomnumber"),
                     result.getString("assets"));
+            try {
+                int archived = result.getInt("archived");
+                patient.setArchived(archived == 1);
+            } catch (SQLException ignored) {
+            }
+            try {
+                String archiveDateStr = result.getString("archiveDate");
+                if (archiveDateStr != null) {
+                    patient.setArchiveDate(DateConverter.convertStringToLocalDate(archiveDateStr));
+                }
+            } catch (SQLException ignored) {
+            }
             list.add(patient);
         }
         return list;
+    }
+
+    public ArrayList<Patient> readAllArchived() throws SQLException {
+        final String SQL = "SELECT * FROM patient WHERE archived = 1";
+        try (PreparedStatement statement = this.connection.prepareStatement(SQL);
+             ResultSet result = statement.executeQuery()) {
+            return getListFromResultSet(result);
+        }
+    }
+
+    public void archive(long pid) throws SQLException {
+        final String SQL = "UPDATE patient SET archived = 1, archiveDate = ? WHERE pid = ?";
+        try (PreparedStatement statement = this.connection.prepareStatement(SQL)) {
+            statement.setString(1, java.time.LocalDate.now().toString());
+            statement.setLong(2, pid);
+            statement.executeUpdate();
+        }
+        LogService.log("PATIENT_ARCHIVE", String.format("Patient (PID: %d) archiviert.", pid));
+    }
+
+    public void reactivate(long pid) throws SQLException {
+        final String SQL = "UPDATE patient SET archived = 0, archiveDate = NULL WHERE pid = ?";
+        try (PreparedStatement statement = this.connection.prepareStatement(SQL)) {
+            statement.setLong(1, pid);
+            statement.executeUpdate();
+        }
+        LogService.log("PATIENT_REACTIVATE", String.format("Patient (PID: %d) reaktiviert.", pid));
     }
 
     /**
