@@ -30,6 +30,7 @@ class PatientDaoTest {
                             "dateOfBirth TEXT NOT NULL, " +
                             "carelevel TEXT NOT NULL, " +
                             "roomnumber TEXT NOT NULL, " +
+                            "telephone TEXT NOT NULL DEFAULT '', " +
                             "archived INTEGER NOT NULL DEFAULT 0, " +
                             "archiveDate TEXT)"
             );

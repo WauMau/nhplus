@@ -11,6 +11,16 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 
+/**
+ * Controller for the audit-log view ({@code LogView.fxml}).
+ *
+ * <p>Displays the audit entries read through {@link LogDao} in a read-only table
+ * (user, action, timestamp, description). The raw ISO timestamp is reformatted
+ * for display into a more readable {@code yyyy-MM-dd HH:mm:ss} form.</p>
+ *
+ * <p>Single responsibility: presenting existing log entries. It never creates or
+ * modifies logs &mdash; writing is done by {@link de.hitec.nhplus.logging.LogService}.</p>
+ */
 public class LogController {
 
     @FXML
@@ -30,11 +40,19 @@ public class LogController {
 
     private final LogDao logDao;
 
+    /**
+     * Creates the controller and its {@link LogDao} on the shared database connection.
+     */
     public LogController() {
         Connection connection = ConnectionBuilder.getConnection();
         this.logDao = new LogDao(connection);
     }
 
+    /**
+     * Initialises the table columns (including the readable timestamp formatting)
+     * and loads the current log entries. Called automatically by JavaFX after the
+     * FXML is loaded.
+     */
     @FXML
     public void initialize() {
         columnUser.setCellValueFactory(new PropertyValueFactory<>("username"));
@@ -53,6 +71,9 @@ public class LogController {
         refresh();
     }
 
+    /**
+     * Reloads all log entries from the database into the table.
+     */
     private void refresh() {
         try {
             tableLogs.getItems().setAll(logDao.readAll());

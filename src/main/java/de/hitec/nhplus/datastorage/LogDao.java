@@ -8,12 +8,35 @@ import java.util.ArrayList;
 
 import de.hitec.nhplus.model.Log;
 
+/**
+ * Data Access Object for {@link Log} audit entries in the {@code logs} table.
+ *
+ * <p>Implements the SQL building blocks required by the generic
+ * {@link DaoImp} template: mapping rows to {@link Log} objects and providing the
+ * prepared statements for insert, read-by-id, read-all and delete.</p>
+ *
+ * <p>Single responsibility: persistence of log entries only. Because audit
+ * records must not be altered after the fact, {@link #getUpdateStatement(Log)}
+ * is intentionally unsupported.</p>
+ */
 public class LogDao extends DaoImp<Log> {
 
+    /**
+     * Creates the DAO for the given database connection.
+     *
+     * @param connection the database connection to use
+     */
     public LogDao(Connection connection) {
         super(connection);
     }
 
+    /**
+     * Maps the current row of the result set to a {@link Log} object.
+     *
+     * @param set result set positioned on a valid row
+     * @return the mapped log entry
+     * @throws SQLException if a column cannot be read
+     */
     @Override
     protected Log getInstanceFromResultSet(ResultSet set) throws SQLException {
         return new Log(
@@ -25,6 +48,13 @@ public class LogDao extends DaoImp<Log> {
         );
     }
 
+    /**
+     * Maps every remaining row of the result set to a list of {@link Log} objects.
+     *
+     * @param set result set to iterate over
+     * @return list of all log entries in the result set
+     * @throws SQLException if a column cannot be read
+     */
     @Override
     protected ArrayList<Log> getListFromResultSet(ResultSet set) throws SQLException {
         ArrayList<Log> list = new ArrayList<>();
@@ -34,6 +64,12 @@ public class LogDao extends DaoImp<Log> {
         return list;
     }
 
+    /**
+     * Builds the {@code INSERT} statement for a new log entry.
+     *
+     * @param log the log entry to insert
+     * @return the prepared insert statement
+     */
     @Override
     protected PreparedStatement getCreateStatement(Log log) {
         try {
@@ -49,6 +85,12 @@ public class LogDao extends DaoImp<Log> {
         }
     }
 
+    /**
+     * Builds the statement that reads a single log entry by its id.
+     *
+     * @param key the id of the log entry
+     * @return the prepared select statement
+     */
     @Override
     protected PreparedStatement getReadByIDStatement(long key) {
         try {
@@ -61,6 +103,11 @@ public class LogDao extends DaoImp<Log> {
         }
     }
 
+    /**
+     * Builds the statement that reads all log entries, newest first.
+     *
+     * @return the prepared select-all statement
+     */
     @Override
     protected PreparedStatement getReadAllStatement() {
         try {
@@ -70,11 +117,24 @@ public class LogDao extends DaoImp<Log> {
         }
     }
 
+    /**
+     * Not supported: audit log entries are immutable and must never be updated.
+     *
+     * @param log ignored
+     * @return never returns normally
+     * @throws UnsupportedOperationException always
+     */
     @Override
     protected PreparedStatement getUpdateStatement(Log log) {
         throw new UnsupportedOperationException("Logs werden nicht geändert");
     }
 
+    /**
+     * Builds the statement that deletes a log entry by its id.
+     *
+     * @param key the id of the log entry to delete
+     * @return the prepared delete statement
+     */
     @Override
     protected PreparedStatement getDeleteStatement(long key) {
         try {

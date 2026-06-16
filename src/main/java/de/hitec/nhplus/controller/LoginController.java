@@ -17,6 +17,19 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
+/**
+ * Controller for the login view ({@code LoginView.fxml}).
+ *
+ * <p>Validates the entered credentials against the {@code users} table via
+ * {@link UserDao} and {@link PasswordUtil}. On success it stores the user in the
+ * {@link Session}, writes a {@code LOGIN} audit entry and opens the main window;
+ * if the account still requires a password change, it first forces the
+ * change-password dialog. On failure it shows an error label.</p>
+ *
+ * <p>Single responsibility: it coordinates the login use case (input &rarr;
+ * verification &rarr; navigation). It does not implement the password hashing
+ * itself ({@link PasswordUtil}) nor the SQL ({@link UserDao}).</p>
+ */
 public class LoginController {
 
     @FXML
@@ -30,6 +43,15 @@ public class LoginController {
 
     private final UserDao userDao = new UserDao();
 
+    /**
+     * Event handler for the login button.
+     *
+     * <p>Reads username and password, looks up the user and verifies the password.
+     * If the account is valid and active: forces a password change when required,
+     * stores the user in the {@link Session}, logs the login and opens the main
+     * window. Otherwise it shows an error message. Database errors are reported in
+     * the error label.</p>
+     */
     @FXML
     private void handleLogin() {
 
@@ -74,15 +96,21 @@ public class LoginController {
             } else {
                 labelError.setVisible(true);
                 labelError.setText("Benutzername oder Passwort falsch");
+                passwordField.clear();
             }
 
         } catch (SQLException exception) {
             labelError.setVisible(true);
             labelError.setText("Datenbankfehler");
+            passwordField.clear();
             exception.printStackTrace();
         }
     }
 
+    /**
+     * Replaces the current scene with the main application window after a
+     * successful login. Errors while loading the view are printed.
+     */
     private void openMainWindow() {
         try {
             FXMLLoader loader = new FXMLLoader(

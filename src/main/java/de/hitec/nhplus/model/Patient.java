@@ -16,28 +16,39 @@ public class Patient extends Person {
     private final SimpleStringProperty dateOfBirth;
     private final SimpleStringProperty careLevel;
     private final SimpleStringProperty roomNumber;
+    private final SimpleStringProperty telephone;
     private final SimpleStringProperty lastTreatmentDate;
     private final List<Treatment> allTreatments = new ArrayList<>();
     private final SimpleBooleanProperty archived;
     private final SimpleObjectProperty<LocalDate> archiveDate;
 
     public Patient(String firstName, String surname, LocalDate dateOfBirth, String careLevel, String roomNumber) {
+        this(firstName, surname, dateOfBirth, careLevel, roomNumber, "");
+    }
+
+    public Patient(String firstName, String surname, LocalDate dateOfBirth, String careLevel, String roomNumber, String telephone) {
         super(firstName, surname);
         this.pid = new SimpleLongProperty(0);
         this.dateOfBirth = new SimpleStringProperty(DateConverter.convertLocalDateToString(dateOfBirth));
         this.careLevel = new SimpleStringProperty(careLevel);
         this.roomNumber = new SimpleStringProperty(roomNumber);
+        this.telephone = new SimpleStringProperty(telephone);
         this.lastTreatmentDate = new SimpleStringProperty("-");
         this.archived = new SimpleBooleanProperty(false);
         this.archiveDate = new SimpleObjectProperty<>(null);
     }
 
     public Patient(long pid, String firstName, String surname, LocalDate dateOfBirth, String careLevel, String roomNumber) {
+        this(pid, firstName, surname, dateOfBirth, careLevel, roomNumber, "");
+    }
+
+    public Patient(long pid, String firstName, String surname, LocalDate dateOfBirth, String careLevel, String roomNumber, String telephone) {
         super(firstName, surname);
         this.pid = new SimpleLongProperty(pid);
         this.dateOfBirth = new SimpleStringProperty(DateConverter.convertLocalDateToString(dateOfBirth));
         this.careLevel = new SimpleStringProperty(careLevel);
         this.roomNumber = new SimpleStringProperty(roomNumber);
+        this.telephone = new SimpleStringProperty(telephone);
         this.lastTreatmentDate = new SimpleStringProperty("-");
         this.archived = new SimpleBooleanProperty(false);
         this.archiveDate = new SimpleObjectProperty<>(null);
@@ -85,6 +96,18 @@ public class Patient extends Person {
 
     public void setRoomNumber(String roomNumber) {
         this.roomNumber.set(roomNumber);
+    }
+
+    public String getTelephone() {
+        return telephone.get();
+    }
+
+    public SimpleStringProperty telephoneProperty() {
+        return telephone;
+    }
+
+    public void setTelephone(String telephone) {
+        this.telephone.set(telephone);
     }
 
     public String getLastTreatmentDate() {
@@ -138,6 +161,7 @@ public class Patient extends Person {
                 "\nBirthday: " + this.dateOfBirth +
                 "\nCarelevel: " + this.careLevel +
                 "\nRoomnumber: " + this.roomNumber +
+                "\nTelephone: " + this.telephone +
                 "\n";
     }
 }

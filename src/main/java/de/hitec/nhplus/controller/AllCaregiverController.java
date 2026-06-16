@@ -18,6 +18,19 @@ import javafx.scene.control.cell.TextFieldTableCell;
 import java.sql.SQLException;
 import java.util.Optional;
 
+/**
+ * Controller for the caregiver overview ({@code AllCaregiverView.fxml}).
+ *
+ * <p>Implements the four CRUD use cases of the caregiver module: it shows all
+ * caregivers in an editable table, adds new caregivers from the input fields,
+ * saves in-place edits and deletes a selected caregiver after a confirmation
+ * prompt. Input validation (mandatory fields) and the confirmation dialog cover
+ * the acceptance criteria; all persistence goes through {@link CaregiverDao}.</p>
+ *
+ * <p>Single responsibility: presentation and user interaction for caregivers.
+ * No SQL lives here &mdash; the controller talks only to the DAO, keeping the
+ * MVP layers loosely coupled.</p>
+ */
 public class AllCaregiverController {
 
     @FXML
@@ -50,6 +63,11 @@ public class AllCaregiverController {
     private final ObservableList<Caregiver> caregivers = FXCollections.observableArrayList();
     private CaregiverDao dao;
 
+    /**
+     * Initialises the table columns, makes the name and telephone columns
+     * editable, binds the data and enables the delete button only while a row is
+     * selected. Called automatically by JavaFX after the FXML is loaded.
+     */
     public void initialize() {
         readAllAndShowInTableView();
 
@@ -73,6 +91,9 @@ public class AllCaregiverController {
         );
     }
 
+    /**
+     * Reloads all caregivers from the database and shows them in the table.
+     */
     private void readAllAndShowInTableView() {
         this.caregivers.clear();
         this.dao = DaoFactory.getDaoFactory().createCaregiverDao();
@@ -83,27 +104,44 @@ public class AllCaregiverController {
         }
     }
 
-    // Wird aufgerufen wenn der Vorname in der Tabelle geändert wird
+    /**
+     * Event handler for editing the first name directly in the table.
+     *
+     * @param event the cell-edit event carrying the row and the new value
+     */
     @FXML
     public void handleOnEditFirstname(TableColumn.CellEditEvent<Caregiver, String> event) {
         event.getRowValue().setFirstName(event.getNewValue());
         doUpdate(event);
     }
 
-    // Wird aufgerufen wenn der Nachname in der Tabelle geändert wird
+    /**
+     * Event handler for editing the surname directly in the table.
+     *
+     * @param event the cell-edit event carrying the row and the new value
+     */
     @FXML
     public void handleOnEditSurname(TableColumn.CellEditEvent<Caregiver, String> event) {
         event.getRowValue().setSurname(event.getNewValue());
         doUpdate(event);
     }
 
-    // Wird aufgerufen wenn die Telefonnummer in der Tabelle geändert wird
+    /**
+     * Event handler for editing the telephone number directly in the table.
+     *
+     * @param event the cell-edit event carrying the row and the new value
+     */
     @FXML
     public void handleOnEditTelephone(TableColumn.CellEditEvent<Caregiver, String> event) {
         event.getRowValue().setTelephone(event.getNewValue());
         doUpdate(event);
     }
 
+    /**
+     * Persists the edited caregiver of a table cell-edit event through the DAO.
+     *
+     * @param event the cell-edit event whose row value is saved
+     */
     private void doUpdate(TableColumn.CellEditEvent<Caregiver, String> event) {
         try {
             this.dao.update(event.getRowValue());
@@ -112,6 +150,11 @@ public class AllCaregiverController {
         }
     }
 
+    /**
+     * Event handler for the "add" button. Reads the input fields, rejects empty
+     * mandatory fields with an error dialog, otherwise creates the caregiver via
+     * the DAO, refreshes the table and clears the input fields.
+     */
     @FXML
     public void handleAdd() {
         String firstName = this.textFieldFirstName.getText();
@@ -137,6 +180,11 @@ public class AllCaregiverController {
         clearTextfields();
     }
 
+    /**
+     * Event handler for the "delete" button. Asks for confirmation and, if
+     * confirmed, deletes the selected caregiver via the DAO and removes it from
+     * the table. Does nothing if no caregiver is selected.
+     */
     @FXML
     public void handleDelete() {
         Caregiver ausgewaehlterPfleger = this.tableView.getSelectionModel().getSelectedItem();
@@ -162,6 +210,9 @@ public class AllCaregiverController {
         }
     }
 
+    /**
+     * Clears the first name, surname and telephone input fields.
+     */
     private void clearTextfields() {
         this.textFieldFirstName.clear();
         this.textFieldSurname.clear();

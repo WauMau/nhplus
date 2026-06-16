@@ -85,6 +85,25 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.2.2</version>
             </plugin>
+            <plugin>
+                <!-- Generates browsable HTML Javadoc into doc/javadoc (mvn javadoc:javadoc) -->
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.6.3</version>
+                <configuration>
+                    <reportOutputDirectory>${project.basedir}/doc</reportOutputDirectory>
+                    <destDir>javadoc</destDir>
+                    <source>20</source>
+                    <doctitle>NHPlus – API Documentation</doctitle>
+                    <windowtitle>NHPlus</windowtitle>
+                    <detectJavaApiLink>false</detectJavaApiLink>
+                    <!-- Document ALL packages of the module, not only the exported ones
+                         (datastorage, logging and utils are not exported in module-info). -->
+                    <additionalOptions>
+                        <additionalOption>--show-packages all</additionalOption>
+                    </additionalOptions>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 </project>

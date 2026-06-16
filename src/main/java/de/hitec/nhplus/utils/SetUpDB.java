@@ -56,6 +56,7 @@ public class SetUpDB {
                 "dateOfBirth TEXT NOT NULL, " +
                 "carelevel TEXT NOT NULL, " +
                 "roomnumber TEXT NOT NULL, " +
+                "telephone TEXT NOT NULL DEFAULT '', " +
                 "archived INTEGER NOT NULL DEFAULT 0, " +
                 "archiveDate TEXT" +
                 ");";
@@ -125,12 +126,12 @@ public class SetUpDB {
         try {
             PatientDao dao = DaoFactory.getDaoFactory().createPatientDao();
 
-            dao.create(new Patient("Seppl", "Herberger", convertStringToLocalDate("1945-12-01"), "4", "202"));
-            dao.create(new Patient("Martina", "Gerdsen", convertStringToLocalDate("1954-08-12"), "5", "010"));
-            dao.create(new Patient("Gertrud", "Franzen", convertStringToLocalDate("1949-04-16"), "3", "002"));
-            dao.create(new Patient("Ahmet", "Yilmaz", convertStringToLocalDate("1941-02-22"), "3", "013"));
-            dao.create(new Patient("Hans", "Neumann", convertStringToLocalDate("1955-12-12"), "2", "001"));
-            dao.create(new Patient("Elisabeth", "Müller", convertStringToLocalDate("1958-03-07"), "5", "110"));
+            dao.create(new Patient("Seppl", "Herberger", convertStringToLocalDate("1945-12-01"), "4", "202", "0151-1000001"));
+            dao.create(new Patient("Martina", "Gerdsen", convertStringToLocalDate("1954-08-12"), "5", "010", "0151-1000002"));
+            dao.create(new Patient("Gertrud", "Franzen", convertStringToLocalDate("1949-04-16"), "3", "002", "0151-1000003"));
+            dao.create(new Patient("Ahmet", "Yilmaz", convertStringToLocalDate("1941-02-22"), "3", "013", "0151-1000004"));
+            dao.create(new Patient("Hans", "Neumann", convertStringToLocalDate("1955-12-12"), "2", "001", "0151-1000005"));
+            dao.create(new Patient("Elisabeth", "Müller", convertStringToLocalDate("1958-03-07"), "5", "110", "0151-1000006"));
 
         } catch (SQLException exception) {
             exception.printStackTrace();

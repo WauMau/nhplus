@@ -57,6 +57,10 @@ public class PatientDao extends DaoImp<Patient> {
                 changes.append(String.format("Raum: '%s' zu '%s'; ",
                     oldPatient.getRoomNumber(), newPatient.getRoomNumber()));
             }
+            if (!oldPatient.getTelephone().equals(newPatient.getTelephone())) {
+                changes.append(String.format("Telefon: '%s' zu '%s'; ",
+                    oldPatient.getTelephone(), newPatient.getTelephone()));
+            }
 
             if (changes.length() > 0) {
                 String logDescription = String.format("Patient (ID: %d) geändert. Details: %s",
@@ -89,13 +93,14 @@ public class PatientDao extends DaoImp<Patient> {
     protected PreparedStatement getCreateStatement(Patient patient) {
         PreparedStatement preparedStatement = null;
         try {
-            final String SQL = "INSERT INTO patient (firstname, surname, dateOfBirth, carelevel, roomnumber) VALUES (?, ?, ?, ?, ?)";
+            final String SQL = "INSERT INTO patient (firstname, surname, dateOfBirth, carelevel, roomnumber, telephone) VALUES (?, ?, ?, ?, ?, ?)";
             preparedStatement = this.connection.prepareStatement(SQL);
             preparedStatement.setString(1, patient.getFirstName());
             preparedStatement.setString(2, patient.getSurname());
             preparedStatement.setString(3, patient.getDateOfBirth());
             preparedStatement.setString(4, patient.getCareLevel());
             preparedStatement.setString(5, patient.getRoomNumber());
+            preparedStatement.setString(6, patient.getTelephone());
         } catch (SQLException exception) {
             exception.printStackTrace();
         }
@@ -124,6 +129,13 @@ public class PatientDao extends DaoImp<Patient> {
                 DateConverter.convertStringToLocalDate(result.getString("dateOfBirth")),
                 result.getString("carelevel"),
                 result.getString("roomnumber"));
+        try {
+            String telephone = result.getString("telephone");
+            if (telephone != null) {
+                patient.setTelephone(telephone);
+            }
+        } catch (SQLException ignored) {
+        }
         try {
             int archived = result.getInt("archived");
             patient.setArchived(archived == 1);
@@ -163,6 +175,13 @@ public class PatientDao extends DaoImp<Patient> {
                     date,
                     result.getString("carelevel"),
                     result.getString("roomnumber"));
+            try {
+                String telephone = result.getString("telephone");
+                if (telephone != null) {
+                    patient.setTelephone(telephone);
+                }
+            } catch (SQLException ignored) {
+            }
             try {
                 int archived = result.getInt("archived");
                 patient.setArchived(archived == 1);
@@ -211,14 +230,15 @@ public class PatientDao extends DaoImp<Patient> {
     protected PreparedStatement getUpdateStatement(Patient patient) {
         PreparedStatement preparedStatement = null;
         try {
-            final String SQL = "UPDATE patient SET firstname = ?, surname = ?, dateOfBirth = ?, carelevel = ?, roomnumber = ? WHERE pid = ?";
+            final String SQL = "UPDATE patient SET firstname = ?, surname = ?, dateOfBirth = ?, carelevel = ?, roomnumber = ?, telephone = ? WHERE pid = ?";
             preparedStatement = this.connection.prepareStatement(SQL);
             preparedStatement.setString(1, patient.getFirstName());
             preparedStatement.setString(2, patient.getSurname());
             preparedStatement.setString(3, patient.getDateOfBirth());
             preparedStatement.setString(4, patient.getCareLevel());
             preparedStatement.setString(5, patient.getRoomNumber());
-            preparedStatement.setLong(6, patient.getPid());
+            preparedStatement.setString(6, patient.getTelephone());
+            preparedStatement.setLong(7, patient.getPid());
         } catch (SQLException exception) {
             exception.printStackTrace();
         }

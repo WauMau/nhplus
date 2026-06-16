@@ -18,7 +18,16 @@ import de.hitec.nhplus.model.Patient;
 import java.sql.SQLException;
 
 /**
- * Controller for the archive patient dialog.
+ * Controller for the archived-patients dialog ({@code ArchivePatientView.fxml}).
+ *
+ * <p>Shows all patients that have been archived (soft-deleted) in a read-only
+ * table including their last treatment date and archive date, and lets the user
+ * reactivate a selected patient. The reactivate button is only enabled while a
+ * row is selected. All data access goes through {@link PatientDao}.</p>
+ *
+ * <p>Single responsibility: presenting and reactivating archived patients. It
+ * holds a reference to the {@link AllPatientController} only to allow the calling
+ * view to refresh after changes, keeping the coupling to a single setter.</p>
  */
 public class ArchivePatientController {
 
@@ -59,6 +68,11 @@ public class ArchivePatientController {
     private PatientDao dao;
     private AllPatientController mainController;
 
+    /**
+     * Initialises the table columns, binds the archived-patient data and enables
+     * the reactivate button only while a row is selected, then loads the archived
+     * patients. Called automatically by JavaFX after the FXML is loaded.
+     */
     public void initialize() {
         this.columnId.setCellValueFactory(new PropertyValueFactory<>("pid"));
         this.columnFirstName.setCellValueFactory(new PropertyValueFactory<>("firstName"));
@@ -83,6 +97,10 @@ public class ArchivePatientController {
         this.readAllArchivedAndShowInTableView();
     }
 
+    /**
+     * Reloads all archived patients from the database, enriches each with its
+     * last treatment date and shows them in the table.
+     */
     private void readAllArchivedAndShowInTableView() {
         this.archivedPatients.clear();
         this.dao = DaoFactory.getDaoFactory().createPatientDao();
@@ -96,6 +114,11 @@ public class ArchivePatientController {
         }
     }
 
+    /**
+     * Event handler for the "reactivate" button. Reactivates the selected
+     * archived patient via the DAO and removes it from the table. Does nothing if
+     * no patient is selected.
+     */
     @FXML
     public void handleReactivate() {
         Patient selectedItem = this.tableView.getSelectionModel().getSelectedItem();
@@ -109,12 +132,21 @@ public class ArchivePatientController {
         }
     }
 
+    /**
+     * Event handler for the "close" button. Closes the archive dialog window.
+     */
     @FXML
     public void handleClose() {
         Stage stage = (Stage) buttonClose.getScene().getWindow();
         stage.close();
     }
 
+    /**
+     * Injects the main patient controller so the opening view can be referenced
+     * (e.g. for refreshing) after the dialog is used.
+     *
+     * @param mainController the controller of the patient overview that opened this dialog
+     */
     public void setMainController(AllPatientController mainController) {
         this.mainController = mainController;
     }

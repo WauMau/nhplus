@@ -11,6 +11,18 @@ import javafx.stage.Stage;
 
 import java.sql.SQLException;
 
+/**
+ * Controller for the change-password dialog ({@code ChangePasswordView.fxml}).
+ *
+ * <p>Lets a user set a new password: it checks that both entries match and that
+ * the new password fulfils the policy ({@link PasswordUtil#isValidPassword(String)}),
+ * then stores a freshly salted hash through {@link UserDao} and clears the
+ * "must change password" flag. Validation problems are shown as error alerts.</p>
+ *
+ * <p>Single responsibility: it drives the change-password use case for a single
+ * {@link User}; hashing and persistence are delegated to {@link PasswordUtil}
+ * and {@link UserDao}.</p>
+ */
 public class ChangePasswordController {
 
     @FXML
@@ -24,10 +36,25 @@ public class ChangePasswordController {
     private User user;
     private final UserDao userDao = new UserDao();
 
+    /**
+     * Sets the user whose password is going to be changed. Must be called before
+     * the dialog is shown.
+     *
+     * @param user the user to update
+     */
     public void setUser(User user) {
         this.user = user;
     }
 
+    /**
+     * Event handler for the save button.
+     *
+     * <p>Validates the two password fields (non-empty, equal, policy-compliant),
+     * generates a new salt and hash, persists them via
+     * {@link UserDao#updatePassword(int, String, String)}, clears the
+     * "must change password" flag and closes the dialog. Any problem is shown to
+     * the user as an error alert.</p>
+     */
     @FXML
     private void handleSave() {
         String password = txtPassword.getText();
@@ -69,6 +96,11 @@ public class ChangePasswordController {
         }
     }
 
+    /**
+     * Shows a modal error alert with the given message.
+     *
+     * @param message the error text to display
+     */
     private void showError(String message) {
         Alert alert =
                 new Alert(Alert.AlertType.ERROR);

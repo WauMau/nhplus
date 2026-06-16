@@ -2,6 +2,7 @@ package de.hitec.nhplus.controller;
 
 import de.hitec.nhplus.datastorage.DaoFactory;
 import de.hitec.nhplus.datastorage.PatientDao;
+import de.hitec.nhplus.logging.LogService;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -48,6 +49,9 @@ public class AllPatientController {
     private TableColumn<Patient, String> columnRoomNumber;
 
     @FXML
+    private TableColumn<Patient, String> columnTelephone;
+
+    @FXML
     private TableColumn<Patient, String> columnLastTreatment;
 
     @FXML
@@ -77,6 +81,9 @@ public class AllPatientController {
     @FXML
     private TextField textFieldRoomNumber;
 
+    @FXML
+    private TextField textFieldTelephone;
+
     private final ObservableList<Patient> patients = FXCollections.observableArrayList();
     private PatientDao dao;
 
@@ -100,6 +107,9 @@ public class AllPatientController {
         this.columnRoomNumber.setCellValueFactory(new PropertyValueFactory<>("roomNumber"));
         this.columnRoomNumber.setCellFactory(TextFieldTableCell.forTableColumn());
 
+        this.columnTelephone.setCellValueFactory(new PropertyValueFactory<>("telephone"));
+        this.columnTelephone.setCellFactory(TextFieldTableCell.forTableColumn());
+
         this.columnLastTreatment.setCellValueFactory(new PropertyValueFactory<>("lastTreatmentDate"));
 
         this.tableView.setItems(this.patients);
@@ -111,6 +121,11 @@ public class AllPatientController {
             public void changed(ObservableValue<? extends Patient> observableValue, Patient oldPatient, Patient newPatient) {
                 AllPatientController.this.buttonDelete.setDisable(newPatient == null);
                 AllPatientController.this.buttonArchivieren.setDisable(newPatient == null);
+                if (newPatient != null) {
+                    LogService.log("READ", String.format(
+                            "hat Patient '%s, %s' (PID: %d) angeschaut.",
+                            newPatient.getSurname(), newPatient.getFirstName(), newPatient.getPid()));
+                }
             }
         });
 
@@ -122,6 +137,7 @@ public class AllPatientController {
         this.textFieldDateOfBirth.textProperty().addListener(inputNewPatientListener);
         this.textFieldCareLevel.textProperty().addListener(inputNewPatientListener);
         this.textFieldRoomNumber.textProperty().addListener(inputNewPatientListener);
+        this.textFieldTelephone.textProperty().addListener(inputNewPatientListener);
     }
 
     @FXML
@@ -151,6 +167,12 @@ public class AllPatientController {
     @FXML
     public void handleOnEditRoomNumber(TableColumn.CellEditEvent<Patient, String> event) {
         event.getRowValue().setRoomNumber(event.getNewValue());
+        this.doUpdate(event);
+    }
+
+    @FXML
+    public void handleOnEditTelephone(TableColumn.CellEditEvent<Patient, String> event) {
+        event.getRowValue().setTelephone(event.getNewValue());
         this.doUpdate(event);
     }
 
@@ -225,8 +247,9 @@ public class AllPatientController {
         LocalDate date = DateConverter.convertStringToLocalDate(birthday);
         String careLevel = this.textFieldCareLevel.getText();
         String roomNumber = this.textFieldRoomNumber.getText();
+        String telephone = this.textFieldTelephone.getText();
         try {
-            this.dao.create(new Patient(firstName, surname, date, careLevel, roomNumber));
+            this.dao.create(new Patient(firstName, surname, date, careLevel, roomNumber, telephone));
         } catch (SQLException exception) {
             exception.printStackTrace();
         }
@@ -240,6 +263,7 @@ public class AllPatientController {
         this.textFieldDateOfBirth.clear();
         this.textFieldCareLevel.clear();
         this.textFieldRoomNumber.clear();
+        this.textFieldTelephone.clear();
     }
 
     private boolean areInputDataValid() {
@@ -253,6 +277,6 @@ public class AllPatientController {
 
         return !this.textFieldFirstName.getText().isBlank() && !this.textFieldSurname.getText().isBlank() &&
                 !this.textFieldDateOfBirth.getText().isBlank() && !this.textFieldCareLevel.getText().isBlank() &&
-                !this.textFieldRoomNumber.getText().isBlank();
+                !this.textFieldRoomNumber.getText().isBlank() && !this.textFieldTelephone.getText().isBlank();
     }
 }
