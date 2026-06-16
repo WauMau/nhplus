@@ -8,14 +8,12 @@ public class Caregiver extends Person {
     private final SimpleLongProperty cid;
     private final SimpleStringProperty telephone;
 
-    // Neuer Pfleger, noch nicht in der Datenbank gespeichert
     public Caregiver(String firstName, String surname, String telephone) {
         super(firstName, surname);
         this.cid = new SimpleLongProperty(0);
         this.telephone = new SimpleStringProperty(telephone);
     }
 
-    // Pfleger der aus der Datenbank geladen wird (hat schon eine ID)
     public Caregiver(long cid, String firstName, String surname, String telephone) {
         super(firstName, surname);
         this.cid = new SimpleLongProperty(cid);

@@ -20,10 +20,7 @@ public class CaregiverDao extends DaoImp<Caregiver> {
      */
     @Override
     public void create(Caregiver caregiver) throws SQLException {
-        // 1. Eigentliches Erstellen über die Superklasse ausführen
         super.create(caregiver);
-
-        // 2. Erstellung im Log protokollieren
         String description = String.format(
             "Neue Pflegekraft '%s %s' (Telefon: %s) wurde angelegt.",
             caregiver.getFirstName(), caregiver.getSurname(), caregiver.getTelephone()
@@ -37,26 +34,22 @@ public class CaregiverDao extends DaoImp<Caregiver> {
      */
     @Override
     public void update(Caregiver newCaregiver) throws SQLException {
-        // 1. Vor dem Update: Den alten Zustand frisch aus der DB lesen
         Caregiver oldCaregiver = this.read(newCaregiver.getCid());
-
-        // 2. Das eigentliche SQL-Update über die Superklasse ausführen
         super.update(newCaregiver);
 
-        // 3. Nach erfolgreichem Update: Werte vergleichen und Log-Text bauen
         if (oldCaregiver != null) {
             StringBuilder changes = new StringBuilder();
 
             if (!oldCaregiver.getFirstName().equals(newCaregiver.getFirstName())) {
-                changes.append(String.format("Vorname: '%s' ➡️ '%s'; ",
+                changes.append(String.format("Vorname: '%s' → '%s'; ",
                     oldCaregiver.getFirstName(), newCaregiver.getFirstName()));
             }
             if (!oldCaregiver.getSurname().equals(newCaregiver.getSurname())) {
-                changes.append(String.format("Nachname: '%s' ➡️ '%s'; ",
+                changes.append(String.format("Nachname: '%s' → '%s'; ",
                     oldCaregiver.getSurname(), newCaregiver.getSurname()));
             }
             if (!oldCaregiver.getTelephone().equals(newCaregiver.getTelephone())) {
-                changes.append(String.format("Telefon: '%s' ➡️ '%s'; ",
+                changes.append(String.format("Telefon: '%s' → '%s'; ",
                     oldCaregiver.getTelephone(), newCaregiver.getTelephone()));
             }
 
@@ -75,13 +68,9 @@ public class CaregiverDao extends DaoImp<Caregiver> {
      */
     @Override
     public void deleteById(long cid) throws SQLException {
-        // 1. Vor dem Löschen Daten lesen
         Caregiver caregiverToDelete = this.read(cid);
-
-        // 2. Löschen ausführen
         super.deleteById(cid);
 
-        // 3. Log schreiben
         if (caregiverToDelete != null) {
             String description = String.format(
                 "Pflegekraft '%s %s' (ID: %d, Telefon: %s) wurde gelöscht.",

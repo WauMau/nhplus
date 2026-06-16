@@ -77,7 +77,6 @@ public class UserDao {
 
         statement.executeUpdate();
 
-        // LOGGING: Benutzer erstellen
         String description = String.format("Neuer Benutzer '%s' mit der Rolle '%s' wurde angelegt.", 
                 user.getUsername(), user.getRole());
         LogService.log("USER_CREATE", description);
@@ -96,7 +95,7 @@ public class UserDao {
     }
 
     public void updatePassword(int userId, String passwordHash, String salt) throws SQLException {
-        // Vorab Benutzer für das Log laden
+
         User user = this.findById(userId);
         String username = (user != null) ? user.getUsername() : "Unbekannt (ID: " + userId + ")";
 
@@ -116,13 +115,12 @@ public class UserDao {
         statement.setInt(3, userId);
         statement.executeUpdate();
 
-        // LOGGING: Eigenes Passwort geändert
         String description = String.format("Das Passwort für Benutzer '%s' wurde aktualisiert.", username);
         LogService.log("USER_PASSWORD_CHANGE", description);
     }
 
     public void updateActiveStatus(int userId, boolean active) throws SQLException {
-        // Vorab Benutzer für das Log laden
+
         User user = this.findById(userId);
         String username = (user != null) ? user.getUsername() : "Unbekannt (ID: " + userId + ")";
 
@@ -139,7 +137,6 @@ public class UserDao {
         statement.setInt(2, userId);
         statement.executeUpdate();
 
-        // LOGGING: Status geändert (Aktivieren / Deaktivieren)
         String statusText = active ? "aktiviert" : "deaktiviert";
         String description = String.format("Benutzer '%s' (Rolle: %s) wurde %s.", 
                 username, (user != null ? user.getRole() : "unbekannt"), statusText);
@@ -147,7 +144,7 @@ public class UserDao {
     }
 
     public void resetPassword(int userId, String hash, String salt) throws SQLException {
-        // Vorab Benutzer für das Log laden
+
         User user = this.findById(userId);
         String username = (user != null) ? user.getUsername() : "Unbekannt (ID: " + userId + ")";
 
@@ -167,7 +164,6 @@ public class UserDao {
         statement.setInt(3, userId);
         statement.executeUpdate();
 
-        // LOGGING: Einmal-Passwort erzeugt
         String description = String.format("Einmal-Passwort für Benutzer '%s' wurde erzeugt (Passwort-Reset angefordert).", username);
         LogService.log("USER_PASSWORD_RESET", description);
     }

@@ -30,10 +30,8 @@ public class TreatmentDao extends DaoImp<Treatment> {
      */
     @Override
     public void create(Treatment treatment) throws SQLException {
-        // 1. Eigentliches Erstellen über die Superklasse ausführen
         super.create(treatment);
 
-        // 2. Erstellung im Log protokollieren
         String description = String.format("Neue Behandlung für Patient (PID: %d) am %s angelegt. Kurzbeschreibung: '%s'",
                 treatment.getPid(), treatment.getDate(), treatment.getDescription());
         LogService.log("TREATMENT_CREATE", description);
@@ -45,47 +43,37 @@ public class TreatmentDao extends DaoImp<Treatment> {
      */
     @Override
     public void update(Treatment newTreatment) throws SQLException {
-        // 1. Vor dem Update: Den alten Zustand frisch aus der DB lesen
         Treatment oldTreatment = this.read(newTreatment.getTid());
-
-        // 2. Das eigentliche SQL-Update über die Superklasse ausführen
         super.update(newTreatment);
 
-        // 3. Nach erfolgreichem Update: Werte vergleichen und Log-Text bauen
         if (oldTreatment != null) {
             StringBuilder changes = new StringBuilder();
 
-            // Datum vergleichen
             if (!oldTreatment.getDate().equals(newTreatment.getDate())) {
-                changes.append(String.format("Datum: '%s' ➡️ '%s'; ", 
+                changes.append(String.format("Datum: '%s' → '%s'; ", 
                         oldTreatment.getDate(), newTreatment.getDate()));
             }
 
-            // Beginn vergleichen
             if (!oldTreatment.getBegin().equals(newTreatment.getBegin())) {
-                changes.append(String.format("Beginn: '%s' ➡️ '%s'; ", 
+                changes.append(String.format("Beginn: '%s' → '%s'; ", 
                         oldTreatment.getBegin(), newTreatment.getBegin()));
             }
 
-            // Ende vergleichen
             if (!oldTreatment.getEnd().equals(newTreatment.getEnd())) {
-                changes.append(String.format("Ende: '%s' ➡️ '%s'; ", 
+                changes.append(String.format("Ende: '%s' → '%s'; ", 
                         oldTreatment.getEnd(), newTreatment.getEnd()));
             }
 
-            // Kurzbeschreibung vergleichen
             if (!oldTreatment.getDescription().equals(newTreatment.getDescription())) {
-                changes.append(String.format("Beschreibung: '%s' ➡️ '%s'; ", 
+                changes.append(String.format("Beschreibung: '%s' → '%s'; ", 
                         oldTreatment.getDescription(), newTreatment.getDescription()));
             }
 
-            // Bemerkungen vergleichen
             if (!oldTreatment.getRemarks().equals(newTreatment.getRemarks())) {
-                changes.append(String.format("Bemerkung: '%s' ➡️ '%s'; ", 
+                changes.append(String.format("Bemerkung: '%s' → '%s'; ", 
                         oldTreatment.getRemarks(), newTreatment.getRemarks()));
             }
 
-            // NEU: Pfleger-Zuweisung / Pfleger-Wechsel vergleichen
             if (oldTreatment.getCaregiverId() != newTreatment.getCaregiverId()) {
                 String oldCaregiver = (oldTreatment.getCaregiverName() != null && !oldTreatment.getCaregiverName().equals("-")) 
                         ? String.format("%s (ID: %d)", oldTreatment.getCaregiverName(), oldTreatment.getCaregiverId()) 
@@ -95,10 +83,9 @@ public class TreatmentDao extends DaoImp<Treatment> {
                         ? String.format("%s (ID: %d)", newTreatment.getCaregiverName(), newTreatment.getCaregiverId()) 
                         : String.format("Pfleger (ID: %d)", newTreatment.getCaregiverId());
 
-                changes.append(String.format("Zuweisung Pfleger: '%s' ➡️ '%s'; ", oldCaregiver, newCaregiver));
+                changes.append(String.format("Zuweisung Pfleger: '%s' → '%s'; ", oldCaregiver, newCaregiver));
             }
 
-            // 4. Nur loggen, wenn sich auch wirklich etwas geändert hat
             if (changes.length() > 0) {
                 String logDescription = String.format("Behandlung (TID: %d) für Patient (PID: %d) geändert. Details: %s", 
                         newTreatment.getTid(), newTreatment.getPid(), changes.toString());
@@ -113,13 +100,9 @@ public class TreatmentDao extends DaoImp<Treatment> {
      */
     @Override
     public void deleteById(long tid) throws SQLException {
-        // 1. Vor dem Löschen die Behandlungsdaten sichern
         Treatment treatmentToDelete = this.read(tid);
-
-        // 2. Das eigentliche Löschen in der Datenbank ausführen
         super.deleteById(tid);
 
-        // 3. Den Löschvorgang im Log protokollieren
         if (treatmentToDelete != null) {
             String description = String.format(
                 "Behandlung (TID: %d) für Patient (PID: %d) am %s komplett gelöscht. Letzte Daten: '%s'",

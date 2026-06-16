@@ -1,11 +1,11 @@
 package de.hitec.nhplus.logging;
 
+import java.time.LocalDateTime;
+
 import de.hitec.nhplus.datastorage.DaoFactory;
 import de.hitec.nhplus.datastorage.LogDao;
 import de.hitec.nhplus.model.Log;
 import de.hitec.nhplus.model.Session;
-
-import java.time.LocalDateTime;
 
 public class LogService {
 
@@ -15,7 +15,7 @@ public class LogService {
     public static void log(String action, String description) {
 
         if (Session.getCurrentUser() == null) {
-            return; // kein User → kein Log
+            return;
         }
 
         String username = Session.getCurrentUser().getUsername();
@@ -31,7 +31,6 @@ public class LogService {
         try {
             logDao.create(log);
         } catch (Exception e) {
-            // Logging darf nie die App crashen
             e.printStackTrace();
         }
     }
