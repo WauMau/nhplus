@@ -28,7 +28,6 @@
             <TableColumn fx:id="columnDateOfBirth" maxWidth="7500.0" prefWidth="75.0" text="Geburtstag" />
             <TableColumn fx:id="columnCareLevel" prefWidth="75.0" text="Pflegegrad" />
             <TableColumn fx:id="columnRoomNumber" prefWidth="75.0" text="Raum" />
-            <TableColumn fx:id="columnAssets" prefWidth="75.0" text="Vermögensstand" />
             <TableColumn fx:id="columnLastTreatment" prefWidth="130.0" text="Letzte Behandlung" />
             <TableColumn fx:id="columnArchiveDate" prefWidth="120.0" text="Archiviert am" />
          </columns>

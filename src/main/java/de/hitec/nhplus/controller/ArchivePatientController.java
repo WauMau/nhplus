@@ -44,9 +44,6 @@ public class ArchivePatientController {
     private TableColumn<Patient, String> columnRoomNumber;
 
     @FXML
-    private TableColumn<Patient, String> columnAssets;
-
-    @FXML
     private TableColumn<Patient, String> columnLastTreatment;
 
     @FXML
@@ -69,7 +66,6 @@ public class ArchivePatientController {
         this.columnDateOfBirth.setCellValueFactory(new PropertyValueFactory<>("dateOfBirth"));
         this.columnCareLevel.setCellValueFactory(new PropertyValueFactory<>("careLevel"));
         this.columnRoomNumber.setCellValueFactory(new PropertyValueFactory<>("roomNumber"));
-        this.columnAssets.setCellValueFactory(new PropertyValueFactory<>("assets"));
         this.columnLastTreatment.setCellValueFactory(new PropertyValueFactory<>("lastTreatmentDate"));
         this.columnArchiveDate.setCellValueFactory(cell -> new SimpleStringProperty(
                 cell.getValue().getArchiveDate() != null ? cell.getValue().getArchiveDate().toString() : "-"));

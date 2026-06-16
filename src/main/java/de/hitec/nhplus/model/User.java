@@ -51,7 +51,7 @@ public class User {
     }
 
     public boolean isUser() {
-        return "USER".equalsIgnoreCase(role);
+        return "PFLEGEKRAFT".equalsIgnoreCase(role);
     }
 
     public boolean isActive() {

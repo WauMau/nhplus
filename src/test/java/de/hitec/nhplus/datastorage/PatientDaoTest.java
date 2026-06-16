@@ -12,23 +12,13 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * Beispiel-Testklasse für die PatientDao-Klasse.
- * Nutzt eine separate Test-Datenbank, um die Produktionsdaten nicht zu verändern.
- *
- * Diese Klasse dient als Vorlage: Erstellt analog dazu Tests für eure eigenen DAO-Klassen.
- */
 class PatientDaoTest {
 
     private static Connection connection;
     private PatientDao dao;
 
-    /**
-     * Wird einmal vor allen Tests ausgeführt: Erstellt eine Test-Datenbank im Arbeitsspeicher.
-     */
     @BeforeAll
     static void setUpDatabase() throws SQLException {
-        // In-Memory-Datenbank: existiert nur während der Tests
         connection = DriverManager.getConnection("jdbc:sqlite::memory:");
 
         try (Statement statement = connection.createStatement()) {
@@ -40,15 +30,12 @@ class PatientDaoTest {
                             "dateOfBirth TEXT NOT NULL, " +
                             "carelevel TEXT NOT NULL, " +
                             "roomnumber TEXT NOT NULL, " +
-                            "assets TEXT NOT NULL)"
+                            "archived INTEGER NOT NULL DEFAULT 0, " +
+                            "archiveDate TEXT)"
             );
         }
     }
 
-    /**
-     * Wird vor jedem einzelnen Test ausgeführt: Erstellt ein frisches DAO-Objekt
-     * und leert die Tabelle, damit Tests sich nicht gegenseitig beeinflussen.
-     */
     @BeforeEach
     void setUp() throws SQLException {
         dao = new PatientDao(connection);
@@ -57,9 +44,6 @@ class PatientDaoTest {
         }
     }
 
-    /**
-     * Wird einmal nach allen Tests ausgeführt: Schließt die Datenbankverbindung.
-     */
     @AfterAll
     static void tearDown() throws SQLException {
         if (connection != null) {
@@ -70,18 +54,15 @@ class PatientDaoTest {
     @Test
     @DisplayName("create() und readAll(): Ein neuer Patient wird gespeichert und kann gelesen werden")
     void createAndReadAll() throws SQLException {
-        // Arrange: Einen neuen Patienten vorbereiten
         Patient patient = new Patient(
                 "Max", "Mustermann",
                 LocalDate.of(1990, 5, 15),
-                "3", "101", "normal"
+                "3", "101"
         );
 
-        // Act: Patienten in der Datenbank anlegen und alle Patienten auslesen
         dao.create(patient);
         List<Patient> allPatients = dao.readAll();
 
-        // Assert: Genau ein Patient sollte vorhanden sein
         assertEquals(1, allPatients.size(), "Es sollte genau ein Patient in der Datenbank sein");
 
         Patient loaded = allPatients.get(0);
@@ -94,23 +75,19 @@ class PatientDaoTest {
     @Test
     @DisplayName("deleteById(): Ein gelöschter Patient ist nicht mehr auffindbar")
     void deleteById() throws SQLException {
-        // Arrange: Einen Patienten anlegen
         Patient patient = new Patient(
                 "Erika", "Musterfrau",
                 LocalDate.of(1985, 3, 20),
-                "2", "202", "normal"
+                "2", "202"
         );
         dao.create(patient);
 
-        // Die ID des angelegten Patienten ermitteln
         List<Patient> allPatients = dao.readAll();
         assertEquals(1, allPatients.size());
         long pid = allPatients.get(0).getPid();
 
-        // Act: Patienten löschen
         dao.deleteById(pid);
 
-        // Assert: Kein Patient sollte mehr vorhanden sein
         List<Patient> afterDelete = dao.readAll();
         assertTrue(afterDelete.isEmpty(), "Nach dem Löschen sollte kein Patient mehr vorhanden sein");
     }

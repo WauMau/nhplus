@@ -11,62 +11,33 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Patients live in a NURSING home and are treated by nurses.
- */
 public class Patient extends Person {
     private SimpleLongProperty pid;
     private final SimpleStringProperty dateOfBirth;
     private final SimpleStringProperty careLevel;
     private final SimpleStringProperty roomNumber;
-    private final SimpleStringProperty assets;
     private final SimpleStringProperty lastTreatmentDate;
     private final List<Treatment> allTreatments = new ArrayList<>();
     private final SimpleBooleanProperty archived;
     private final SimpleObjectProperty<LocalDate> archiveDate;
 
-    /**
-     * Constructor to initiate an object of class <code>Patient</code> with the given parameter. Use this constructor
-     * to initiate objects, which are not persisted yet, because it will not have a patient id (pid).
-     *
-     * @param firstName First name of the patient.
-     * @param surname Last name of the patient.
-     * @param dateOfBirth Date of birth of the patient.
-     * @param careLevel Care level of the patient.
-     * @param roomNumber Room number of the patient.
-     * @param assets Assets of the patient.
-     */
-    public Patient(String firstName, String surname, LocalDate dateOfBirth, String careLevel, String roomNumber, String assets) {
+    public Patient(String firstName, String surname, LocalDate dateOfBirth, String careLevel, String roomNumber) {
         super(firstName, surname);
         this.pid = new SimpleLongProperty(0);
         this.dateOfBirth = new SimpleStringProperty(DateConverter.convertLocalDateToString(dateOfBirth));
         this.careLevel = new SimpleStringProperty(careLevel);
         this.roomNumber = new SimpleStringProperty(roomNumber);
-        this.assets = new SimpleStringProperty(assets);
         this.lastTreatmentDate = new SimpleStringProperty("-");
         this.archived = new SimpleBooleanProperty(false);
         this.archiveDate = new SimpleObjectProperty<>(null);
     }
 
-    /**
-     * Constructor to initiate an object of class <code>Patient</code> with the given parameter. Use this constructor
-     * to initiate objects, which are already persisted and have a patient id (pid).
-     *
-     * @param pid Patient id.
-     * @param firstName First name of the patient.
-     * @param surname Last name of the patient.
-     * @param dateOfBirth Date of birth of the patient.
-     * @param careLevel Care level of the patient.
-     * @param roomNumber Room number of the patient.
-     * @param assets Assets of the patient.
-     */
-    public Patient(long pid, String firstName, String surname, LocalDate dateOfBirth, String careLevel, String roomNumber, String assets) {
+    public Patient(long pid, String firstName, String surname, LocalDate dateOfBirth, String careLevel, String roomNumber) {
         super(firstName, surname);
         this.pid = new SimpleLongProperty(pid);
         this.dateOfBirth = new SimpleStringProperty(DateConverter.convertLocalDateToString(dateOfBirth));
         this.careLevel = new SimpleStringProperty(careLevel);
         this.roomNumber = new SimpleStringProperty(roomNumber);
-        this.assets = new SimpleStringProperty(assets);
         this.lastTreatmentDate = new SimpleStringProperty("-");
         this.archived = new SimpleBooleanProperty(false);
         this.archiveDate = new SimpleObjectProperty<>(null);
@@ -88,11 +59,6 @@ public class Patient extends Person {
         return dateOfBirth;
     }
 
-    /**
-     * Stores the given string as new <code>birthOfDate</code>.
-     *
-     * @param dateOfBirth as string in the following format: YYYY-MM-DD.
-     */
     public void setDateOfBirth(String dateOfBirth) {
         this.dateOfBirth.set(dateOfBirth);
     }
@@ -117,21 +83,8 @@ public class Patient extends Person {
         return roomNumber;
     }
 
-
     public void setRoomNumber(String roomNumber) {
         this.roomNumber.set(roomNumber);
-    }
-
-    public String getAssets() {
-        return assets.get();
-    }
-
-    public SimpleStringProperty assetsProperty() {
-        return assets;
-    }
-
-    public void setAssets(String assets) {
-        this.assets.set(assets);
     }
 
     public String getLastTreatmentDate() {
@@ -170,12 +123,6 @@ public class Patient extends Person {
         this.archiveDate.set(date);
     }
 
-    /**
-     * Adds a treatment to the list of treatments, if the list does not already contain the treatment.
-     *
-     * @param treatment Treatment to add.
-     * @return False, if the treatment was already part of the list, else true.
-     */
     public boolean add(Treatment treatment) {
         if (this.allTreatments.contains(treatment)) {
             return false;
@@ -191,7 +138,6 @@ public class Patient extends Person {
                 "\nBirthday: " + this.dateOfBirth +
                 "\nCarelevel: " + this.careLevel +
                 "\nRoomnumber: " + this.roomNumber +
-                "\nAssets: " + this.assets +
                 "\n";
     }
 }
